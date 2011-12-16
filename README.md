@@ -5,18 +5,20 @@ directfb-lua [Lua](http://www.lua.org) binding to [DirectFB](http://directfb.org
 It is an automated binding generated from the DirectFB headers.
 
 For more info, contact me:
- * Ezequiel Garcia elezegarcia@gmail.com
+
+* Ezequiel Garcia elezegarcia@gmail.com
 
 Support
 -------
 
 So far the supported interfaces are:
- * IDirectFB
- * IDirectFBSurface
- * IDirectFBDisplayLayer
- * IDirectFBWindow
- * IDirectFBImageProvider
- * IDirectFBFont
+
+* IDirectFB
+* IDirectFBSurface
+* IDirectFBDisplayLayer
+* IDirectFBWindow
+* IDirectFBImageProvider
+* IDirectFBFont
 
 The rest is still not supported, but the plan is to support (almost) everything.
 Since Lua is not a low-level language there won't be (at least for now) support 
