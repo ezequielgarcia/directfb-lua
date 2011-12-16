@@ -1,6 +1,11 @@
 #!/usr/bin/perl
 
-# Interface blacklist
+$pkgname = "directfb";
+$src_dir = "./src/";
+
+#########################
+## Interface blacklist ##
+#########################
 $blacklist{"IDirectFBVideoProvider"}	= true;
 $blacklist{"IDirectFBEventBuffer"}		= true;
 $blacklist{"IDirectFBInputDevice"}		= true;
@@ -8,7 +13,9 @@ $blacklist{"IDirectFBPalette"}			= true;
 $blacklist{"IDirectFBGL"}				= true;
 $blacklist{"IDirectFBScreen"}			= true;
 	
-# Function blacklist
+########################
+## Function blacklist ##
+########################
 $blacklist{"GetClipboardData"}			= true;
 $blacklist{"GetGL"}						= true;
 $blacklist{"Lock"}						= true;
@@ -56,28 +63,6 @@ $blacklist{"CreateVideoProvider"}		= true;
 $blacklist{"SendEvent"}					= true;
 $blacklist{"GetScreen"}					= true;
 
-$gen_structs{"DFBDisplayLayerSourceDescription"} = true;
-$gen_structs{"DFBDisplayLayerDescription"} = true;
-$gen_structs{"DFBDisplayLayerConfig"} 	= true;
-$gen_structs{"DFBColorAdjustment"}	 	= true;
-$gen_structs{"DFBSurfaceDescription"}	= true;
-$gen_structs{"DFBWindowDescription"}	= true;
-$gen_structs{"DFBFontDescription"}		= true;
-$gen_structs{"DFBImageDescription"}		= true;
-$gen_structs{"DFBScreenDescription"}	= true;
-$gen_structs{"DFBScreenMixerDescription"}	= true;
-$gen_structs{"DFBRegion"}    			= true;
-$gen_structs{"DFBColor"}    			= true;
-$gen_structs{"DFBRectangle"}   			= true;
-$gen_structs{"DFBPoint"}    			= true;
-$gen_structs{"DFBSpan"}					= true;
-$gen_structs{"DFBTriangle"}				= true;
-$gen_structs{"DFBDimension"}			= true;
-
-$src_dir = "./src/";
-
-$pkgname = "directfb";
-
 ###############
 ## Utilities ##
 ###############
@@ -92,7 +77,71 @@ sub trim ($) {
 	$str =~ s/\s*$//g;
 }
 
-sub print_common_interface ($) {
+#####################
+## Code Generation ##
+#####################
+
+sub generate_struct_check ($) {
+
+	local ($struct) = @_;
+
+	# Struct check (read)
+	print STRUCTS_H "DLL_LOCAL ${struct}* check_${struct} (lua_State *L, int index, ${struct} *dst);\n";
+	print STRUCTS_C "DLL_LOCAL ${struct}* check_${struct} (lua_State *L, int index, ${struct} *dst)\n",
+			        "{\n",
+		  			"\tif (lua_isnil(L, index)) \n",
+		  			"\t\treturn NULL;\n\n",
+		  			"\tluaL_checktype(L, index, LUA_TTABLE);\n",
+		  			"\tmemset(dst, 0, sizeof(${struct}));\n";
+
+	foreach $entry (@{$types{$struct}->{ENTRIES}}) {
+		if ($types{$entry->{TYPE}}->{KIND} eq "struct") {
+			print "UNIMPLEMENTED: $entry->{TYPE} $entry->{NAME}\n";
+			print STRUCTS_C "\n\t#warning Unimplemented struct of struct: $entry->{TYPE} $entry->{NAME}\n";
+		}
+		else {
+			print STRUCTS_C "\n\tlua_getfield(L, index, \"$entry->{NAME}\");\n";
+			if ($entry->{ARRAY} ne "" and $entry->{TYPE} eq "char") {
+				# TODO: Do memcpy or strcpy into the char array.
+				#print STRUCTS_C "\tdst->$entry->{NAME} = lua_tonumber(L, -1);\n";
+			}
+			else {
+				print STRUCTS_C "\tdst->$entry->{NAME} = lua_tonumber(L, -1);\n";
+			}
+			print STRUCTS_C "\tlua_pop(L, 1);\n";
+		}
+	}
+
+	print STRUCTS_C "\t\n\treturn dst;\n",
+					"}\n\n";
+}
+
+sub generate_struct_push ($) {
+
+	local ($struct) = @_;
+
+	# Struct push (return)
+	print STRUCTS_H "DLL_LOCAL void push_${struct} (lua_State *L, ${struct} *src);\n";
+	print STRUCTS_C "DLL_LOCAL void push_${struct} (lua_State *L, ${struct} *src)\n",
+			        "{\n",
+				    "\tlua_newtable(L);\n\n";
+
+	foreach $entry (@{$types{$struct}->{ENTRIES}}) {
+
+		print STRUCTS_C "\tlua_pushstring(L, \"$entry->{NAME}\");\n";
+		if ($entry->{ARRAY} ne "" and $entry->{TYPE} eq "char") {
+			print STRUCTS_C "\tlua_pushstring(L, src->$entry->{NAME});\n";
+		}
+		else {
+			print STRUCTS_C "\tlua_pushnumber(L, src->$entry->{NAME});\n";
+		}
+		print STRUCTS_C "\tlua_settable(L, -3);\n";
+	}
+
+	print STRUCTS_C "}\n\n";
+}
+
+sub generate_common_interface ($) {
 
 	local ($interface) = @_;
 
@@ -121,7 +170,6 @@ sub print_common_interface ($) {
 ## File creation ##
 ###################
 
-# TODO: If no-one uses includes, throw it away :)
 sub h_create ($$$) {
 	local ($FILE, $filename, $includes) = @_;
 
@@ -220,6 +268,7 @@ sub parse_interface ($) {
 		if ( /^\s*\/\*\*\s*(.+)\s*\*\*\/\s*$/ ) {
 		}
 		elsif ( /^\s*(\w+)\s*\(\s*\*\s*(\w+)\s*\)\s*\(?\s*$/ ) {
+			# Skip blacklisted functions
 			next if ($blacklist{$2} eq true);
 
 			local $function   = $2;
@@ -264,6 +313,7 @@ sub parse_interface ($) {
 							$declaration .= "\t$param->{TYPE} $param->{NAME}, *$param->{NAME}_p;\n";
 							$pre_code .= "\t$param->{NAME}_p = check_$param->{TYPE}(L, $arg_num, &$param->{NAME});\n";
 							$args .= ", $param->{NAME}_p";
+							$gen_struct_check{$param->{TYPE}} = true;
 						}
 						# array input?
 						else
@@ -288,6 +338,7 @@ sub parse_interface ($) {
 							$args .= ", &$param->{NAME}";
 							$post_code .= "\tpush_$param->{TYPE}(L, &$param->{NAME});\n";
 							$return_val++;
+							$gen_struct_push{$param->{TYPE}} = true;
 						}
 						# Interface input(!)
 						elsif ($types{$param->{TYPE}}->{KIND} eq "interface") {
@@ -458,7 +509,7 @@ sub parse_enum {
 	$types{$enum} = {
 		NAME    => $enum,
 		KIND    => "enum",
-		ENTRIES => @entries
+		ENTRIES => \@entries
 	};
 }
 
@@ -534,60 +585,9 @@ sub parse_struct {
 	$types{$struct} = {
 		NAME    => $struct,
 		KIND    => "struct",
-		ENTRIES => @entries
+		ENTRIES => \@entries
 	};
 
-	if ($gen_structs{$struct}) {
-
-		# Struct push (return)
-		print STRUCTS_H "DLL_LOCAL void push_${struct} (lua_State *L, ${struct} *src);\n";
-		print STRUCTS_C "DLL_LOCAL void push_${struct} (lua_State *L, ${struct} *src)\n",
-						"{\n",
-						"\tlua_newtable(L);\n\n";
-		foreach $entry (@entries) {
-
-			print STRUCTS_C "\tlua_pushstring(L, \"$entry->{NAME}\");\n";
-			if ($entry->{ARRAY} ne "" and $entry->{TYPE} eq "char") {
-				print STRUCTS_C "\tlua_pushstring(L, src->$entry->{NAME});\n";
-			}
-			else {
-				print STRUCTS_C "\tlua_pushnumber(L, src->$entry->{NAME});\n";
-			}
-			print STRUCTS_C "\tlua_settable(L, -3);\n";
-		}
-
-		print STRUCTS_C "}\n\n";
-
-		# Struct check (read)
-		print STRUCTS_H "DLL_LOCAL ${struct}* check_${struct} (lua_State *L, int index, ${struct} *dst);\n";
-		print STRUCTS_C "DLL_LOCAL ${struct}* check_${struct} (lua_State *L, int index, ${struct} *dst)\n",
-						"{\n",
-						"\tif (lua_isnil(L, index)) \n",
-						"\t\treturn NULL;\n\n",
-						"\tluaL_checktype(L, index, LUA_TTABLE);\n",
-		  				"\tmemset(dst, 0, sizeof(${struct}));\n";
-
-		foreach $entry (@entries) {
-			if ($types{$entry->{TYPE}}->{KIND} eq "struct") {
-				print "UNIMPLEMENTED: $entry->{TYPE} $entry->{NAME}\n";
-				print STRUCTS_C "\n\t#warning Unimplemented struct of struct: $entry->{TYPE} $entry->{NAME}\n";
-			}
-			else {
-				print STRUCTS_C "\n\tlua_getfield(L, index, \"$entry->{NAME}\");\n";
-				if ($entry->{ARRAY} ne "" and $entry->{TYPE} eq "char") {
-					# TODO: Do memcpy or strcpy into the char array.
-					#print STRUCTS_C "\tdst->$entry->{NAME} = lua_tonumber(L, -1);\n";
-				}
-				else {
-					print STRUCTS_C "\tdst->$entry->{NAME} = lua_tonumber(L, -1);\n";
-				}
-				print STRUCTS_C "\tlua_pop(L, 1);\n";
-			}
-		}
-
-		print STRUCTS_C "\t\n\treturn dst;\n";
-		print STRUCTS_C "}\n\n";
-	}
 }
 
 #
@@ -642,7 +642,6 @@ sub parse_func ($$) {
 		}
 
 		if ($entry ne "") {
-			# TODO: Use structure
 			$entries_types{$entry} = $const . $type;
 			$entries_ptrs{$entry} = $ptr;
 			$entries_params{$entry} = $text;
@@ -687,9 +686,10 @@ while (<>) {
 
 		trim( \$interface );
 
+		# Skip blacklisted interfaces
 		next if ($blacklist{$interface} eq true);
 
-		print_common_interface($interface);
+		generate_common_interface($interface);
 
 		if (!defined ($types{$interface})) {
 			$types{$interface} = {
@@ -699,6 +699,7 @@ while (<>) {
 		}
 	}
 	elsif ( /^\s*DEFINE_INTERFACE\s*\(\s*(\w+),\s*$/ ) {
+		# Skip blacklisted interfaces
 		next if ($blacklist{$1} eq true);
 		parse_interface( $1 );
 	}
@@ -712,10 +713,10 @@ while (<>) {
 		parse_func( $1, $2 );
 	}
 	elsif ( /^\s*#define\s+([^\(\s]+)(\([^\)]*\))?\s*(.*)/ ) {
-#		parse_macro( $1, $2, $3 );
+		# Macro, nothing to do 
 	}
 	elsif ( /^\s*\/\*\s*$/ ) {
-#		parse_comment( \$headline, \$detailed, \$options, "" );
+		# Comment, nothing to do 
 	}
 	else {
 		$headline = "";
@@ -724,10 +725,21 @@ while (<>) {
 	}
 }
 
+foreach $s (keys %gen_struct_check) {
+	generate_struct_check($s);
+}
+
+foreach $s (keys %gen_struct_push) {
+	generate_struct_push($s);
+}
+
 # End enum function
 print ENUMS_C 	"}\n";
 
-# Library initialization code
+#################################
+## Library initialization code ##
+#################################
+
 print COMMON_C 	"static int l_DirectFBInit (lua_State *L)\n",
 			   	"{\n",
 				"\tDirectFBInit(NULL, NULL);\n",

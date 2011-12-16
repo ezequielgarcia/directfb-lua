@@ -15,6 +15,9 @@ $(OUTPUT): $(SRC)
 	cat $(DFB_HEADER) | ./gendfb-lua.pl || exit 1
 	touch .gen.stamp
 
+tags: $(SRC_DIR)* $(DFB_HEADER)
+	ctags $(SRC_DIR)* $(DFB_HEADER)
+
 .PHONY: clean
 clean:
 	rm -f *.so $(SRC_DIR)* .gen.stamp
