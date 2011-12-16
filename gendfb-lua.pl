@@ -8,7 +8,6 @@ $src_dir = "./src/";
 #########################
 $blacklist{"IDirectFBVideoProvider"}	= true;
 $blacklist{"IDirectFBEventBuffer"}		= true;
-$blacklist{"IDirectFBInputDevice"}		= true;
 $blacklist{"IDirectFBPalette"}			= true;
 $blacklist{"IDirectFBGL"}				= true;
 $blacklist{"IDirectFBScreen"}			= true;
@@ -57,11 +56,12 @@ $blacklist{"SetDstGeometry"}			= true;
 $blacklist{"GetPalette"}				= true;
 $blacklist{"SetPalette"}				= true;
 $blacklist{"SetDstGeometry"}			= true;
-$blacklist{"GetInputDevice"}			= true;
 $blacklist{"CreateInputEventBuffer"}	= true;
 $blacklist{"CreateVideoProvider"}		= true;
 $blacklist{"SendEvent"}					= true;
 $blacklist{"GetScreen"}					= true;
+$blacklist{"GetKeymapEntry"}			= true;
+$blacklist{"SetKeymapEntry"}			= true;
 
 ###############
 ## Utilities ##

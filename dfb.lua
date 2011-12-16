@@ -31,8 +31,8 @@ surface:DrawString('DirectFB meets Lua', -1, 10, 10, DSTF_TOPLEFT)
 
 surface:Flip(nil, 0)
 
---image:Release()
---font:Release()
---image_surf:Release()
---surface:Release()
---dfb:Release()
+image:Release()
+font:Release()
+image_surf:Release()
+surface:Release()
+dfb:Release()
