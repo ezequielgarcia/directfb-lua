@@ -10,6 +10,8 @@ $blacklist{"IDirectFBVideoProvider"}	= true;
 $blacklist{"IDirectFBEventBuffer"}		= true;
 $blacklist{"IDirectFBPalette"}			= true;
 $blacklist{"IDirectFBGL"}				= true;
+$blacklist{"IDirectFBGL2"}				= true;
+$blacklist{"IDirectFBGL2Context"}		= true;
 $blacklist{"IDirectFBScreen"}			= true;
 	
 ########################
@@ -32,6 +34,7 @@ $blacklist{"SetColors"}					= true;
 $blacklist{"TextureTriangles"}			= true;
 $blacklist{"SetIndexTranslation"}		= true;
 $blacklist{"SetMatrix"}					= true;
+$blacklist{"SetSrcColorMatrix"}			= true;
 $blacklist{"SetKeySelection"}			= true;
 $blacklist{"Read"}						= true;
 $blacklist{"GetInterface"}				= true;
@@ -62,6 +65,11 @@ $blacklist{"SendEvent"}					= true;
 $blacklist{"GetScreen"}					= true;
 $blacklist{"GetKeymapEntry"}			= true;
 $blacklist{"SetKeymapEntry"}			= true;
+$blacklist{"SetRop"}					= true;
+$blacklist{"SetSrcColorKeyExtended"}	= true;
+$blacklist{"SetDstColorKeyExtended"}	= true;
+$blacklist{"DrawMonoGlyphs"}			= true;
+$blacklist{"SetSrcConvolution"}			= true;
 
 ###############
 ## Utilities ##
@@ -691,7 +699,7 @@ while (<>) {
 	chomp;
 
 	# Search interface declaration
-	if ( /^\s*DECLARE_INTERFACE\s*\(\s*(\w+)\s\)\s*$/ ) {
+	if ( /^\s*\w*DECLARE_INTERFACE\s*\(\s*(\w+)\s\)\s*$/ ) {
 		$interface = $1;
 
 		trim( \$interface );
@@ -708,7 +716,7 @@ while (<>) {
 			};
 		}
 	}
-	elsif ( /^\s*DEFINE_INTERFACE\s*\(\s*(\w+),\s*$/ ) {
+	elsif ( /^\s*\w*DEFINE_INTERFACE\s*\(\s*(\w+),\s*$/ ) {
 		# Skip blacklisted interfaces
 		next if ($blacklist{$1} eq true);
 		parse_interface( $1 );
