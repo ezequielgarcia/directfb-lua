@@ -141,6 +141,8 @@ sub generate_struct_push ($) {
 	print STRUCTS_C "}\n\n";
 }
 
+# TODO: Is there a need for null interface pointer safe-checking?
+#
 sub generate_common_interface ($) {
 
 	local ($interface) = @_;
@@ -149,7 +151,8 @@ sub generate_common_interface ($) {
 	print COMMON_H  "DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface);\n";
 	print COMMON_C  "DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface)\n",
 					"{\n",
-					"\t${interface} **p = lua_newuserdata(L, sizeof(${interface}*));\n",
+					"\t${interface} **p;\n",
+					"\tp = lua_newuserdata(L, sizeof(${interface}*));\n",
 					"\t*p = interface;\n",
 					"\tluaL_getmetatable(L, \"${interface}\");\n",
 					"\tlua_setmetatable(L, -2);\n",
@@ -394,11 +397,14 @@ sub parse_interface ($) {
 			print INTERFACE "static int\n",
 							"l_${interface}_${function} (lua_State *L)\n",
 							"{\n",
+							"\tDFBResult res;\n",
 							"\t${interface} **thiz;\n",
 							"${declaration}\n",
 						   	"\tthiz = check_${interface}(L, 1);\n",
 							"${pre_code}\n",
-							"\t(*thiz)->${function}( *thiz${args} );\n",
+							"\tres = (*thiz)->${function}( *thiz${args} );\n",
+							"\tif (res != DFB_OK)\n",
+							"\t\treturn luaL_error(L, \"Error %d on DirectFB call to %s\::%s\", res, \"${interface}\", \"${function}\");\n",
 							"${post_code}\n",
 							"\treturn ${return_val};\n",
 							"}\n\n";
@@ -409,7 +415,7 @@ sub parse_interface ($) {
 					} );
 		}
 		elsif ( /^\s*\/\*\s*$/ ) {
-		#	parse_comment( \$headline, \$detailed, \$options, "" );
+			# Comment
 		}
 	}
 
@@ -418,7 +424,10 @@ sub parse_interface ($) {
 					"{\n",
 					"\t${interface} **thiz;\n",
 					"\tthiz = check_${interface}(L, 1);\n",
-					"\t(*thiz)->Release( *thiz );\n",
+					"\tif (*thiz) {\n",
+					"\t\t(*thiz)->Release( *thiz );\n",
+					"\t\t*thiz = NULL;\n",
+					"\t}\n",
 					"\treturn 0;\n",
 					"}\n",
 					"\n\n";
@@ -430,6 +439,7 @@ sub parse_interface ($) {
 	}
 
 	print INTERFACE "\t{\"Release\", l_${interface}_Release},\n",
+					"\t{\"__gc\", l_${interface}_Release},\n",
 					"\t{NULL, NULL}\n",
 					"};\n\n";
 
@@ -748,8 +758,11 @@ print COMMON_C 	"static int l_DirectFBInit (lua_State *L)\n",
 
 print COMMON_C	"static int l_DirectFBCreate (lua_State *L)\n",
 				"{\n",
+				"\tDFBResult res;\n",
 				"\tIDirectFB *interface;\n",
-				"\tDirectFBCreate(&interface);\n",
+				"\tres = DirectFBCreate(&interface);\n",
+				"\tif (res != DFB_OK)\n",
+				"\t\treturn luaL_error(L, \"Error %d on DirectFB call to DirectFBCreate\", res);\n",
 				"\tpush_IDirectFB(L, interface);\n",
 				"\treturn 1;\n",
 				"}\n\n";

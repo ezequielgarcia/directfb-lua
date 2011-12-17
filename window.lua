@@ -4,7 +4,6 @@ require 'directfb'
 -- DFB Initialization
 directfb.DirectFBInit()
 dfb = directfb.DirectFBCreate()
-dfb:SetCooperativeLevel(DFSCL_FULLSCREEN)
 
 -- Get layer
 layer = dfb:GetDisplayLayer(0)
@@ -30,10 +29,3 @@ w2:MoveTo(150, 150)
 
 w1:SetOpacity(0x80)
 w2:SetOpacity(0x80)
-
-s1:Release()
-s2:Release()
-w1:Release()
-w2:Release()
-layer:Release()
-dfb:Release()

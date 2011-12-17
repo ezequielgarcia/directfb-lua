@@ -4,7 +4,7 @@ require 'directfb'
 -- DFB Initialization
 directfb.DirectFBInit()
 dfb = directfb.DirectFBCreate()
-dfb:SetCooperativeLevel(DFSCL_FULLSCREEN)
+--dfb:SetCooperativeLevel(DFSCL_ADMINISTRATIVE)
 
 -- Surface creation, notice the SUM instead of OR
 desc = {}
@@ -30,9 +30,3 @@ surface:SetColor(0, 0, 0, 0xff)
 surface:DrawString('DirectFB meets Lua', -1, 10, 10, DSTF_TOPLEFT)
 
 surface:Flip(nil, 0)
-
-image:Release()
-font:Release()
-image_surf:Release()
-surface:Release()
-dfb:Release()
