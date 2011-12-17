@@ -19,10 +19,19 @@ So far the supported interfaces are:
 * IDirectFBWindow
 * IDirectFBImageProvider
 * IDirectFBFont
+* IDirectFBInputDevice
 
 The rest is still not supported, but the plan is to support (almost) everything.
 Since Lua is not a low-level language there won't be (at least for now) support 
 for low level buffer handling, for instance Surface::Lock().
+
+Features
+--------
+
+Taking advantage of Lua garbage collection, there is no need to explicitly 
+release interfaces. You can just let Lua decide when to deallocate it,
+calling Release() for you. 
+If you **do** need to release some interface immediately, of course you can.
 
 History
 -------
@@ -85,18 +94,13 @@ A quick example with font and image rendering:
     image = dfb:CreateImageProvider('lua.gif')
     image_surf = dfb:CreateSurface(image:GetSurfaceDescription())
     image:RenderTo(image_surf, nil)
+	image:Release()
 
 	surface:Blit(image_surf, nil, 100, 100)
 	surface:SetColor(0, 0, 0, 0xff)
 	surface:DrawString('DirectFB meets Lua', -1, 10, 10, DSTF_TOPLEFT)
 
 	surface:Flip(nil, 0)
-
-    image:Release()
-    font:Release()
-    image_surf:Release()
-    surface:Release()
-    dfb:Release()
 
 Another example with a couple of windows:
 
@@ -131,13 +135,6 @@ Another example with a couple of windows:
 
     w1:SetOpacity(0x80)
     w2:SetOpacity(0x80)
-
-	s1:Release()
-	s2:Release()
-	w1:Release()
-	w2:Release()
-	layer:Release()
-	dfb:Release()
 
 License
 -------
