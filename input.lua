@@ -3,13 +3,13 @@ require 'directfb'
 
 directfb.DirectFBInit()
 dfb = directfb.DirectFBCreate()
-dfb:SetCooperativeLevel(DFSCL_FULLSCREEN)
+dfb:SetCooperativeLevel(DFSCL_NORMAL)
 
-primary = dfb:CreateSurface {flags=DSDESC_CAPS, caps=DSCAPS_PRIMARY+DSCAPS_FLIPPING}
+primary = dfb:CreateSurface {caps=DSCAPS_PRIMARY+DSCAPS_FLIPPING}
 w,h = primary:GetSize()
 
 -- Render tux image to tux surface
-prov = dfb:CreateImageProvider("lua.gif")
+prov = dfb:CreateImageProvider('lua.gif')
 desc = prov:GetSurfaceDescription();
 tux = dfb:CreateSurface(desc)
 prov:RenderTo(tux, nil)
@@ -46,8 +46,3 @@ while keyboard:GetKeyState(DIKI_ESCAPE) == DIKS_UP do
 	end
 end
 
--- Release all resources
-keyboard:Release()
-tux:Release()
-primary:Release()
-dfb:Release()

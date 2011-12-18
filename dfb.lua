@@ -4,19 +4,15 @@ require 'directfb'
 -- DFB Initialization
 directfb.DirectFBInit()
 dfb = directfb.DirectFBCreate()
---dfb:SetCooperativeLevel(DFSCL_ADMINISTRATIVE)
+dfb:SetCooperativeLevel(DFSCL_NORMAL)
 
 -- Surface creation, notice the SUM instead of OR
-desc = {}
-desc.flags = DSDESC_CAPS
-desc.caps = DSCAPS_PRIMARY + DSCAPS_FLIPPING
-
-surface = dfb:CreateSurface(desc)
+surface = dfb:CreateSurface {caps=DSCAPS_PRIMARY+DSCAPS_FLIPPING}
 surface:Clear( 0x80, 0x80, 0x80, 0xff )
 
 -- Font creation
-font_path = '/usr/share/fonts/TTF/DejaVuSans.ttf'
-font = dfb:CreateFont(font_path, {flags=DFDESC_HEIGHT, height=30})
+font_path = 'DejaVuSans.ttf'
+font = dfb:CreateFont(font_path, {height=30})
 
 surface:SetFont(font)
 

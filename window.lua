@@ -4,18 +4,14 @@ require 'directfb'
 -- DFB Initialization
 directfb.DirectFBInit()
 dfb = directfb.DirectFBCreate()
+dfb:SetCooperativeLevel(DFSCL_NORMAL)
 
 -- Get layer
 layer = dfb:GetDisplayLayer(0)
 
 -- Create window
-desc = {}
-desc.flags = DWDESC_WIDTH + DWDESC_HEIGHT + DWDESC_SURFACE_CAPS
-desc.width = 100
-desc.height = 100
-desc.surface_caps = DSCAPS_FLIPPING
-w1 = layer:CreateWindow(desc)
-w2 = layer:CreateWindow(desc)
+w1 = layer:CreateWindow {width=300, height=300, surface_caps=DSCAPS_FLIPPING}
+w2 = layer:CreateWindow {width=300, height=300, surface_caps=DSCAPS_FLIPPING}
 
 -- Get windows surface
 s1 = w1:GetSurface()
