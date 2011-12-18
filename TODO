@@ -6,6 +6,7 @@ Still there is a lot of work todo!
 Generator script
 ----------------
 * Implement intelligent enum generation, only generate the ones we use.
+* "Please, please clean my perl style" -- the script
 
 DirectFB generation
 -------------------
@@ -24,8 +25,8 @@ would be to pass strings as: 'ONE,TWO,THREE' (where the comma can be replaced 'O
 
 This string gets parsed (in the C-side) and each one is used as a key into a table, like this:
 
-enum_table['ONE']
-enum_table['TWO']
+  enum_table['ONE']
+  enum_table['TWO']
 
 If we found a nil value, this means the string is illegal for this enum. 
 This way we can avoid annoying string comparison and take advantage of lua
@@ -34,7 +35,14 @@ string handling (?).
 On returning an enum, we could build a userdata an implement a contains() function.
 So the usage would be like this:
 
-caps = s:GetCapabilities()
-if caps:contains('SOME_ENUM') then
-	-- stuff
-end
+  caps = s:GetCapabilities()
+  if caps:contains('SOME_ENUM') then
+  	-- stuff
+  end
+
+Also, if we make contains() the metamethod for __index we will be able to write:
+  if caps['SOME_ENUM'] then
+    -- stuff
+  end
+
+
