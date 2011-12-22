@@ -81,14 +81,14 @@ $blacklist{AttachEventBuffer}		= 1;
 ## Utilities ##
 ###############
 
-sub trim ($) {
-	local (*str) = @_;
+sub trim {
+	my $str_ref = shift;
 
 	# remove leading white space
-	$str =~ s/^\s*//g;
+	$$str_ref =~ s/^\s*//g;
 
 	# remove trailing white space and new line
-	$str =~ s/\s*$//g;
+	$$str_ref =~ s/\s*$//g;
 }
 
 sub string_to_flag ($$) {
