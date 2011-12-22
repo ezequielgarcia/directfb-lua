@@ -108,9 +108,9 @@ sub string_to_flag {
 ## Code Generation ##
 #####################
 
-sub generate_struct_check ($) {
+sub generate_struct_check {
 
-	my ($struct) = @_;
+	my $struct = shift;
 	my $hasflags = $types{$struct}->{HASFLAGS};
 	my $flagval;
 
@@ -172,9 +172,9 @@ sub generate_struct_check ($) {
 					"}\n\n";
 }
 
-sub generate_struct_push ($) {
+sub generate_struct_push {
 
-	my ($struct) = @_;
+	my $struct = shift;
 
 	# Struct push (return)
 	print STRUCTS_H "DLL_LOCAL void push_${struct} (lua_State *L, ${struct} *src);\n";
@@ -199,9 +199,9 @@ sub generate_struct_push ($) {
 
 # TODO: Is there a need for null interface pointer safe-checking?
 #
-sub generate_common_interface ($) {
+sub generate_common_interface {
 
-	my ($interface) = @_;
+	my $interface = shift;
 
 	print COMMON_H  "DLL_LOCAL int open_${interface} (lua_State *L);\n";
 	print COMMON_H  "DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface);\n";
@@ -229,7 +229,7 @@ sub generate_common_interface ($) {
 ## File creation ##
 ###################
 
-sub h_create ($$$) {
+sub h_create {
 	my ($FILE, $filename, $includes) = @_;
 
 	open( $FILE, ">${src_dir}$filename" )
@@ -244,7 +244,7 @@ sub h_create ($$$) {
 				"$includes\n";
 }
 
-sub c_create ($$$) {
+sub c_create {
 	my ($FILE, $filename, $includes) = @_;
 
 	open( $FILE, ">${src_dir}$filename" )
@@ -257,13 +257,13 @@ sub c_create ($$$) {
 				"$includes\n";
 }
 
-sub h_close ($) {
+sub h_close {
 	my ($FILE) = @_;
 	print $FILE "\n#endif\n";
 	close( $FILE );
 }
 
-sub c_close ($) {
+sub c_close {
 	my ($FILE) = @_;
 	close( $FILE );
 }
@@ -277,7 +277,7 @@ sub c_close ($) {
 #
 # TODO: Add full comment support and use it for function types as well.
 #
-sub parse_params () {
+sub parse_params {
 	my @entries;
 
 	while (<>) {
@@ -311,7 +311,7 @@ sub parse_params () {
 # Reads stdin until the end of the interface is reached.
 # Parameter is the interface name.
 #
-sub parse_interface ($) {
+sub parse_interface {
 	my ($interface) = @_;
 
 	trim( \$interface );
@@ -666,7 +666,7 @@ sub parse_struct {
 # Reads stdin until the end of the function type is reached.
 # Parameters are the return type and function type name.
 #
-sub parse_func ($$) {
+sub parse_func {
 	my ($rtype, $name) = @_;
 
 	my @entries;
@@ -797,12 +797,12 @@ while (<>) {
 	}
 }
 
-foreach my $s (keys %gen_struct_check) {
-	generate_struct_check($s);
+foreach (keys %gen_struct_check) {
+	generate_struct_check($_);
 }
 
-foreach my $s (keys %gen_struct_push) {
-	generate_struct_push($s);
+foreach (keys %gen_struct_push) {
+	generate_struct_push($_);
 }
 
 # End enum function
@@ -839,8 +839,8 @@ print COMMON_C "int LUALIB_API luaopen_$pkgname (lua_State *L)\n",
 	 		   "{\n";
 
 my @interfaces = grep { $types{$_}{KIND} eq "interface" } keys %types;
-foreach my $name (@interfaces) {
-	print COMMON_C "\topen_$name(L);\n",
+foreach (@interfaces) {
+	print COMMON_C "\topen_$_(L);\n",
 }
 
 print COMMON_C "\n",
