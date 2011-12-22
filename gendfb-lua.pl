@@ -629,8 +629,10 @@ sub parse_struct {
 
 			trim( \$struct );
 
-			$struct_list{$struct} = $headline;
-			$type_list{$struct} = $headline;
+			# TODO: Verify this and remove if useless
+			# 
+			#$struct_list{$struct} = $headline;
+			#$type_list{$struct} = $headline;
 
 			last;
 		}
@@ -707,8 +709,10 @@ sub parse_func {
 			$text = $t1.$t2;
 		}
 		elsif ( /^\s*\)\;\s*$/ ) {
-			$func_list{$name} = $headline;
-			$type_list{$name} = $headline;
+			# TODO: Verify this and remove if useless
+			# 
+			#$func_list{$name} = $headline;
+			#$type_list{$name} = $headline;
 
 			last;
 		}
@@ -791,9 +795,11 @@ while (<>) {
 		# Comment, nothing to do 
 	}
 	else {
-		$headline = "";
-		$detailed = "";
-		%options  = ();
+		# TODO: Verify this and remove if useless
+		# 
+		#$headline = "";
+		#$detailed = "";
+		#%options  = ();
 	}
 }
 
