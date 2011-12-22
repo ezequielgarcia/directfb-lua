@@ -8,6 +8,10 @@
 my $pkgname = "directfb";
 my $src_dir = "./src/";
 
+my %types;
+my %gen_struct_check;
+my %gen_struct_push;
+
 #########################
 ## Interface blacklist ##
 #########################
@@ -490,7 +494,7 @@ sub parse_interface {
 
 	print FH "static const luaL_reg ${interface}_methods[] = {\n";
 
-	for $func (@funcs) {
+	for my $func (@funcs) {
 		print FH "\t{\"$func->{NAME}\",l_${interface}_$func->{NAME}},\n";
 	}
 
@@ -516,6 +520,7 @@ sub parse_interface {
 #
 sub parse_enum {
 	my @entries;
+	my $enum;
 
 	while (<>) {
 		chomp;
@@ -584,11 +589,12 @@ sub parse_enum {
 sub parse_struct {
 	my @entries;
 	my $hasflags = 0;
+	my $struct;
 
 	while (<>) {
 		chomp;
 
-		my $entry;
+		my ($entry, $const, $ptr, $array, $text, $type, $t1, $t2);
 
 		# without comment
 		if ( /^\s*(const )?\s*([\w ]+)\s+(\**)([\w]+)([\[\w\]]+)*(\s*:\s*\d+)?;\s*$/ ) {
@@ -682,7 +688,7 @@ sub parse_func {
 	while (<>) {
 		chomp;
 
-		my $entry;
+		my ($entry, $const, $type, $ptr, $text, $t1, $t2);
 
 		# without comment
 		if ( /^\s*(const )?\s*([\w ]+)\s+(\**)([\w\d\+\[\]]+)(\s*:\s*\d+)?,?\s*$/ ) {
@@ -758,7 +764,7 @@ while (<>) {
 
 	# Search interface declaration
 	if ( /^\s*\w*DECLARE_INTERFACE\s*\(\s*(\w+)\s\)\s*$/ ) {
-		$interface = $1;
+		my $interface = $1;
 
 		trim( \$interface );
 
