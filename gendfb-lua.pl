@@ -91,22 +91,17 @@ sub trim {
 	$$str_ref =~ s/\s*$//g;
 }
 
-sub string_to_flag ($$) {
+sub string_to_flag {
 	my ($enum, $name) = @_;
-	my $val = 0;
+	my @entries = @{$types{$enum}->{ENTRIES}};
 
-	#print "Looking flag enum for type $enum on $name ... ";
-	
-	foreach my $entry (@{$types{$enum}->{ENTRIES}}) {
-		
-		if ($entry =~ /\w*$name\w*/i) {
-			#print "yes, we selected $entry for $name\n";
-			return $entry;
-		}
+	foreach (@entries) {
+
+		# try to match case-insensitive the name of the enum flag
+		return $_ if /\w*$name\w*/i;
 	}
 
-	#print "nothing selected for $name\n";
-	return $val;
+	return 0;
 }
 
 #####################
