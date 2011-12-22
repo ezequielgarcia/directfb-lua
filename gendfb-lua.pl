@@ -5,76 +5,77 @@
 ## Package variables ##
 #######################
 
-$pkgname = "directfb";
-$src_dir = "./src/";
+my $pkgname = "directfb";
+my $src_dir = "./src/";
 
 #########################
 ## Interface blacklist ##
 #########################
-$blacklist{"IDirectFBVideoProvider"}	= 1;
-$blacklist{"IDirectFBEventBuffer"}		= 1;
-$blacklist{"IDirectFBPalette"}			= 1;
-$blacklist{"IDirectFBGL"}				= 1;
-$blacklist{"IDirectFBGL2"}				= 1;
-$blacklist{"IDirectFBGL2Context"}		= 1;
-$blacklist{"IDirectFBScreen"}			= 1;
+my %blacklist;
+$blacklist{IDirectFBVideoProvider}	= 1;
+$blacklist{IDirectFBPalette}		= 1;
+$blacklist{IDirectFBGL}				= 1;
+$blacklist{IDirectFBGL2}			= 1;
+$blacklist{IDirectFBGL2Context}		= 1;
+$blacklist{IDirectFBScreen}			= 1;
+$blacklist{IDirectFBEventBuffer}	= 1;
 	
 ########################
 ## Function blacklist ##
 ########################
-$blacklist{"GetClipboardData"}			= 1;
-$blacklist{"GetGL"}						= 1;
-$blacklist{"Lock"}						= 1;
-$blacklist{"Unlock"}					= 1;
-$blacklist{"GetProperty"}				= 1;
-$blacklist{"RemoveProperty"}			= 1;
-$blacklist{"GetStringBreak"}	 		= 1;
-$blacklist{"SetStreamAttributes"} 		= 1;
-$blacklist{"SetBufferThresholds"} 		= 1;
-$blacklist{"SetClipboardData"}	 		= 1;
-$blacklist{"GetClipboardTimeStamp"}		= 1;
-$blacklist{"Write"} 					= 1;
-$blacklist{"PutData"} 					= 1;
-$blacklist{"SetColors"}					= 1;
-$blacklist{"TextureTriangles"}			= 1;
-$blacklist{"SetIndexTranslation"}		= 1;
-$blacklist{"SetMatrix"}					= 1;
-$blacklist{"SetSrcColorMatrix"}			= 1;
-$blacklist{"SetKeySelection"}			= 1;
-$blacklist{"Read"}						= 1;
-$blacklist{"GetInterface"}				= 1;
-$blacklist{"EnumInputDevices"}			= 1;
-$blacklist{"EnumDisplayLayers"}			= 1;
-$blacklist{"EnumScreens"}				= 1;
-$blacklist{"EnumVideoModes"}			= 1;
-$blacklist{"SetProperty"} 				= 1;
-$blacklist{"EnumEncodings"} 			= 1;
-$blacklist{"SetRenderCallback"} 		= 1;
-$blacklist{"PlayTo"}				 	= 1;
-$blacklist{"GetData"} 					= 1;
-$blacklist{"PeekData"} 					= 1;
-$blacklist{"GetDeviceDescription"}		= 1;
-$blacklist{"CreatePalette"}				= 1;
-$blacklist{"CreateDataBuffer"}			= 1;
-$blacklist{"CreateEventBuffer"}			= 1;
-$blacklist{"DetachEventBuffer"}			= 1;
-$blacklist{"AttachEventBuffer"}			= 1;
-$blacklist{"SetSrcGeometry"}			= 1;
-$blacklist{"SetDstGeometry"}			= 1;
-$blacklist{"GetPalette"}				= 1;
-$blacklist{"SetPalette"}				= 1;
-$blacklist{"SetDstGeometry"}			= 1;
-$blacklist{"CreateInputEventBuffer"}	= 1;
-$blacklist{"CreateVideoProvider"}		= 1;
-$blacklist{"SendEvent"}					= 1;
-$blacklist{"GetScreen"}					= 1;
-$blacklist{"GetKeymapEntry"}			= 1;
-$blacklist{"SetKeymapEntry"}			= 1;
-$blacklist{"SetRop"}					= 1;
-$blacklist{"SetSrcColorKeyExtended"}	= 1;
-$blacklist{"SetDstColorKeyExtended"}	= 1;
-$blacklist{"DrawMonoGlyphs"}			= 1;
-$blacklist{"SetSrcConvolution"}			= 1;
+$blacklist{GetClipboardData}		= 1;
+$blacklist{GetGL}					= 1;
+$blacklist{Lock}					= 1;
+$blacklist{Unlock}					= 1;
+$blacklist{GetProperty}				= 1;
+$blacklist{RemoveProperty}			= 1;
+$blacklist{GetStringBreak}	 		= 1;
+$blacklist{SetStreamAttributes} 	= 1;
+$blacklist{SetBufferThresholds} 	= 1;
+$blacklist{SetClipboardData}	 	= 1;
+$blacklist{GetClipboardTimeStamp}	= 1;
+$blacklist{Write} 					= 1;
+$blacklist{PutData} 				= 1;
+$blacklist{SetColors}				= 1;
+$blacklist{TextureTriangles}		= 1;
+$blacklist{SetIndexTranslation}		= 1;
+$blacklist{SetMatrix}				= 1;
+$blacklist{SetSrcColorMatrix}		= 1;
+$blacklist{SetKeySelection}			= 1;
+$blacklist{Read}					= 1;
+$blacklist{GetInterface}			= 1;
+$blacklist{EnumInputDevices}		= 1;
+$blacklist{EnumDisplayLayers}		= 1;
+$blacklist{EnumScreens}				= 1;
+$blacklist{EnumVideoModes}			= 1;
+$blacklist{SetProperty} 			= 1;
+$blacklist{EnumEncodings} 			= 1;
+$blacklist{SetRenderCallback} 		= 1;
+$blacklist{PlayTo}				 	= 1;
+$blacklist{GetData} 				= 1;
+$blacklist{PeekData} 				= 1;
+$blacklist{GetDeviceDescription}	= 1;
+$blacklist{CreatePalette}			= 1;
+$blacklist{CreateDataBuffer}		= 1;
+$blacklist{SetSrcGeometry}			= 1;
+$blacklist{SetDstGeometry}			= 1;
+$blacklist{GetPalette}				= 1;
+$blacklist{SetPalette}				= 1;
+$blacklist{SetDstGeometry}			= 1;
+$blacklist{CreateInputEventBuffer}	= 1;
+$blacklist{CreateVideoProvider}		= 1;
+$blacklist{SendEvent}				= 1;
+$blacklist{GetScreen}				= 1;
+$blacklist{GetKeymapEntry}			= 1;
+$blacklist{SetKeymapEntry}			= 1;
+$blacklist{SetRop}					= 1;
+$blacklist{SetSrcColorKeyExtended}	= 1;
+$blacklist{SetDstColorKeyExtended}	= 1;
+$blacklist{DrawMonoGlyphs}			= 1;
+$blacklist{SetSrcConvolution}		= 1;
+$blacklist{CreateEventBuffer}		= 1;
+$blacklist{DetachEventBuffer}		= 1;
+$blacklist{AttachEventBuffer}		= 1;
 
 ###############
 ## Utilities ##
