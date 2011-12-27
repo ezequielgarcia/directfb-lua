@@ -566,7 +566,10 @@ sub parse_enum {
 		else {
 		}
 
-		if ($entry ne "") {
+		# NOTE: This strange "sa" exception is needed because
+		# older headers comments are a bit wicked. This 
+		# is already fixed in newer ones (check git repo).
+		if ($entry ne "" and $entry ne "sa") {
 			push (@entries, $entry);
 		
 			# Map this entry to a global variable. 
