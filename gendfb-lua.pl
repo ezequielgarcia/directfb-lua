@@ -229,9 +229,9 @@ sub generate_interface_check {
 						"}\n\n";
 }
 
-sub generate_common_interface {
+sub generate_interface_open {
 	my $interface = shift;
-	print COMMON_H  "DLL_LOCAL int open_${interface} (lua_State *L);\n";
+	print INTERFACE_H  "DLL_LOCAL int open_${interface} (lua_State *L);\n\n";
 }
 
 ###################
@@ -750,13 +750,14 @@ sub parse_func {
 ## Main ##
 ##########
 
-h_create( COMMON_H, "common.h", "" );
-c_create( COMMON_C, "common.c", "#include \"common.h\"\n#include \"interfaces.h\"\n" );
+h_create( COMMON_H, "common.h" );
 
-h_create( INTERFACE_H, "interfaces.h", "" );
+c_create( CORE_C, "core.c", "#include \"interfaces.h\"\n" );
+
+h_create( INTERFACE_H, "interfaces.h", "#include \"common.h\"\n" );
 c_create( INTERFACE_C, "interfaces.c", "#include \"common.h\"\n" );
 
-h_create( STRUCTS_H, "structs.h", "" );
+h_create( STRUCTS_H, "structs.h" );
 c_create( STRUCTS_C, "structs.c", "#include \"common.h\"\n" );
 
 c_create( ENUMS_C, "enums.c", "#include \"common.h\"\n" );
@@ -767,8 +768,7 @@ print COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
 				"#else\n",
 				"\t#define DLL_EXPORT\n",
 				"\t#define DLL_LOCAL\n",
-				"#endif\n\n",
-				"DLL_LOCAL void open_enums (lua_State *L);\n";
+				"#endif\n\n";
 
 # TODO: Global variables or .. ?
 # Start open_enum function. This maps enum symbols to lua global variables.
@@ -838,18 +838,19 @@ print ENUMS_C 	"}\n";
 #################################
 my @interfaces = grep { $types{$_}{KIND} eq "interface" } keys %types;
 foreach (@interfaces) {
-	generate_common_interface($_);
+	generate_interface_open($_);
 	generate_interface_check($_);
 	generate_interface_push($_);
 }
 
-print COMMON_C 	"static int l_DirectFBInit (lua_State *L)\n",
+
+print CORE_C 	"static int l_DirectFBInit (lua_State *L)\n",
 			   	"{\n",
 				"\tDirectFBInit(NULL, NULL);\n",
 				"\treturn 0;\n",
 				"}\n\n";
 
-print COMMON_C	"static int l_DirectFBCreate (lua_State *L)\n",
+print CORE_C	"static int l_DirectFBCreate (lua_State *L)\n",
 				"{\n",
 				"\tDFBResult res;\n",
 				"\tIDirectFB *interface;\n",
@@ -860,28 +861,29 @@ print COMMON_C	"static int l_DirectFBCreate (lua_State *L)\n",
 				"\treturn 1;\n",
 				"}\n\n";
 
-print COMMON_C  "static const luaL_reg dfb_m[] = {\n",
+print CORE_C  "static const luaL_reg dfb_m[] = {\n",
 				"\t{\"DirectFBCreate\", l_DirectFBCreate},\n",
 				"\t{\"DirectFBInit\", l_DirectFBInit},\n",
 				"\t{NULL, NULL}\n",
 				"};\n\n";
 
-print COMMON_C "int LUALIB_API luaopen_$pkgname (lua_State *L)\n",
+print CORE_C "int LUALIB_API luaopen_$pkgname (lua_State *L)\n",
 	 		   "{\n";
 
 my @interfaces = grep { $types{$_}{KIND} eq "interface" } keys %types;
 foreach (@interfaces) {
-	print COMMON_C "\topen_$_(L);\n",
+	print CORE_C "\topen_$_(L);\n",
 }
 
-print COMMON_C "\n",
+print CORE_C "\n",
 			   "\tluaL_openlib(L, \"$pkgname\", dfb_m, 0);\n",
 				"\topen_enums(L);\n",
 			   "\treturn 1;\n",
 			   "}";
 
 h_close( COMMON_H );
-c_close( COMMON_C );
+
+c_close( CORE_C );
 
 h_close( STRUCTS_H );
 c_close( STRUCTS_C );
