@@ -5,14 +5,16 @@ Still there is a lot of work todo!
 
 Generator script
 ----------------
-* Implement intelligent enum generation, only generate the ones we use.
+* Fix intelligent enum generation, fails sometimes.
 * "Please, please clean my perl style" -- the script
+* Fix union parsing.
+* Break parsing and generation into two separates operations, well defined inside script.
+* Remove barewords filehandles.
 
 DirectFB generation
 -------------------
-* Convert from DFBResult to some string for useful error messages.
-* Add interface support, if makes sense
-* Add function support, if makes sense
+* Add more interface support, if makes sense. Particularly, I would like to have EventBuffer.
+* Add more function support, if makes sense.
 
 Enums
 -----
