@@ -203,30 +203,35 @@ sub generate_struct_push {
 
 # TODO: Is there a need for null interface pointer safe-checking?
 #
-sub generate_common_interface {
-
+sub generate_interface_push {
 	my $interface = shift;
+	print INTERFACE_H	"DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface);\n\n";
+	print INTERFACE_C	"DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface)\n",
+						"{\n",
+						"\t${interface} **p;\n",
+						"\tp = lua_newuserdata(L, sizeof(${interface}*));\n",
+						"\t*p = interface;\n",
+						"\tluaL_getmetatable(L, \"${interface}\");\n",
+						"\tlua_setmetatable(L, -2);\n",
+						"}\n\n";
+}
 
+sub generate_interface_check {
+	my $interface = shift;
+	print INTERFACE_H	"DLL_LOCAL ${interface} **check_${interface} (lua_State *L, int index);\n\n";
+	print INTERFACE_C	"DLL_LOCAL ${interface} **check_${interface} (lua_State *L, int index)\n",
+						"{\n",
+						"\t${interface} **p;\n",
+						"\tluaL_checktype(L, index, LUA_TUSERDATA);\n",
+						"\tp = (${interface} **) luaL_checkudata(L, index, \"${interface}\");\n",
+						"\tif (p == NULL) luaL_typerror(L, index, \"${interface}\");\n",
+						"\treturn p;\n",
+						"}\n\n";
+}
+
+sub generate_common_interface {
+	my $interface = shift;
 	print COMMON_H  "DLL_LOCAL int open_${interface} (lua_State *L);\n";
-	print COMMON_H  "DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface);\n";
-	print COMMON_C  "DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface)\n",
-					"{\n",
-					"\t${interface} **p;\n",
-					"\tp = lua_newuserdata(L, sizeof(${interface}*));\n",
-					"\t*p = interface;\n",
-					"\tluaL_getmetatable(L, \"${interface}\");\n",
-					"\tlua_setmetatable(L, -2);\n",
-					"}\n\n";
-
-	print COMMON_H  "DLL_LOCAL ${interface} **check_${interface} (lua_State *L, int index);\n\n";
-	print COMMON_C  "DLL_LOCAL ${interface} **check_${interface} (lua_State *L, int index)\n",
-					"{\n",
-					"\t${interface} **p;\n",
-					"\tluaL_checktype(L, index, LUA_TUSERDATA);\n",
-					"\tp = (${interface} **) luaL_checkudata(L, index, \"${interface}\");\n",
-					"\tif (p == NULL) luaL_typerror(L, index, \"${interface}\");\n",
-					"\treturn p;\n",
-					"}\n\n";
 }
 
 ###################
@@ -320,7 +325,8 @@ sub parse_interface {
 
 	trim( \$interface );
 
-	c_create( FH, "${interface}.c", "#include \"common.h\"\n#include \"structs.h\"\n" );
+	# TODO: separate generate from parsing
+	c_create( FH, "${interface}.c", "#include \"common.h\"\n#include \"structs.h\"\n#include \"interfaces.h\"\n" );
 
 	my @funcs;
 
@@ -348,6 +354,7 @@ sub parse_interface {
 			# Arg number starts at 2 (Lua starts at 1 plus self interface which uses 1).
 			my $arg_num = 2;
 
+			# TODO: separate generate from parsing
 			for $param (@params) {
 				# simple
 				if ($param->{PTR} eq "") {
@@ -454,6 +461,7 @@ sub parse_interface {
 				$post_code = "\n".$post_code;
 			}
 
+			# TODO: separate generate from parsing
 			print FH "static int\n",
 						"l_${interface}_${function} (lua_State *L)\n",
 						"{\n",
@@ -575,6 +583,7 @@ sub parse_enum {
 			# Map this entry to a global variable. 
 			# Won't have any type checking from the lua side,
 			# as it is only a number variable.
+			# TODO: separate generate from parsing
 			print ENUMS_C "\tlua_pushnumber(L, $entry);\n";
 			print ENUMS_C "\tlua_setglobal(L, \"$entry\");\n\n";
 		}
@@ -742,7 +751,10 @@ sub parse_func {
 ##########
 
 h_create( COMMON_H, "common.h", "" );
-c_create( COMMON_C, "common.c", "#include \"common.h\"\n" );
+c_create( COMMON_C, "common.c", "#include \"common.h\"\n#include \"interfaces.h\"\n" );
+
+h_create( INTERFACE_H, "interfaces.h", "" );
+c_create( INTERFACE_C, "interfaces.c", "#include \"common.h\"\n" );
 
 h_create( STRUCTS_H, "structs.h", "" );
 c_create( STRUCTS_C, "structs.c", "#include \"common.h\"\n" );
@@ -773,8 +785,6 @@ while (<>) {
 
 		# Skip blacklisted interfaces
 		next if (defined $blacklist{$interface});
-
-		generate_common_interface($interface);
 
 		if (!defined ($types{$interface})) {
 			$types{$interface} = {
@@ -826,6 +836,12 @@ print ENUMS_C 	"}\n";
 #################################
 ## Library initialization code ##
 #################################
+my @interfaces = grep { $types{$_}{KIND} eq "interface" } keys %types;
+foreach (@interfaces) {
+	generate_common_interface($_);
+	generate_interface_check($_);
+	generate_interface_push($_);
+}
 
 print COMMON_C 	"static int l_DirectFBInit (lua_State *L)\n",
 			   	"{\n",
@@ -869,5 +885,8 @@ c_close( COMMON_C );
 
 h_close( STRUCTS_H );
 c_close( STRUCTS_C );
+
+h_close( INTERFACE_H );
+c_close( INTERFACE_C );
 
 c_close( ENUMS_C );
