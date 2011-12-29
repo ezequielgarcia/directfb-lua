@@ -762,6 +762,7 @@ c_create( STRUCTS_C, "structs.c", "#include \"common.h\"\n" );
 
 c_create( ENUMS_C, "enums.c", "#include \"common.h\"\n" );
 
+# DLL_EXPORT is not being used, so it could be removed.
 print COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
 				"\t#define DLL_EXPORT __attribute__((visibility(\"default\")))\n",
 				"\t#define DLL_LOCAL	__attribute__((visibility(\"hidden\")))\n",
