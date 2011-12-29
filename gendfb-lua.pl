@@ -5,113 +5,113 @@
 ## Package variables ##
 #######################
 
-$pkgname = "directfb";
-$src_dir = "./src/";
+my $pkgname = "directfb";
+my $src_dir = "./src/";
+
+my %types;
+my %gen_struct_check;
+my %gen_struct_push;
 
 #########################
 ## Interface blacklist ##
 #########################
-$blacklist{"IDirectFBEventBuffer"}		= 1;
-$blacklist{"IDirectFBPalette"}			= 1;
-$blacklist{"IDirectFBGL"}				= 1;
-$blacklist{"IDirectFBGL2"}				= 1;
-$blacklist{"IDirectFBGL2Context"}		= 1;
-$blacklist{"IDirectFBScreen"}			= 1;
+my %blacklist;
+$blacklist{IDirectFBPalette}		= 1;
+$blacklist{IDirectFBGL}				= 1;
+$blacklist{IDirectFBGL2}			= 1;
+$blacklist{IDirectFBGL2Context}		= 1;
+$blacklist{IDirectFBScreen}			= 1;
+$blacklist{IDirectFBEventBuffer}	= 1;
 	
 ########################
 ## Function blacklist ##
 ########################
-$blacklist{"GetClipboardData"}			= 1;
-$blacklist{"GetGL"}						= 1;
-$blacklist{"Lock"}						= 1;
-$blacklist{"Unlock"}					= 1;
-$blacklist{"GetProperty"}				= 1;
-$blacklist{"RemoveProperty"}			= 1;
-$blacklist{"GetStringBreak"}	 		= 1;
-$blacklist{"SetStreamAttributes"} 		= 1;
-$blacklist{"SetBufferThresholds"} 		= 1;
-$blacklist{"SetClipboardData"}	 		= 1;
-$blacklist{"GetClipboardTimeStamp"}		= 1;
-$blacklist{"Write"} 					= 1;
-$blacklist{"PutData"} 					= 1;
-$blacklist{"SetColors"}					= 1;
-$blacklist{"TextureTriangles"}			= 1;
-$blacklist{"SetIndexTranslation"}		= 1;
-$blacklist{"SetMatrix"}					= 1;
-$blacklist{"SetSrcColorMatrix"}			= 1;
-$blacklist{"SetKeySelection"}			= 1;
-$blacklist{"Read"}						= 1;
-$blacklist{"GetInterface"}				= 1;
-$blacklist{"EnumInputDevices"}			= 1;
-$blacklist{"EnumDisplayLayers"}			= 1;
-$blacklist{"EnumScreens"}				= 1;
-$blacklist{"EnumVideoModes"}			= 1;
-$blacklist{"SetProperty"} 				= 1;
-$blacklist{"EnumEncodings"} 			= 1;
-$blacklist{"SetRenderCallback"} 		= 1;
-$blacklist{"GetData"} 					= 1;
-$blacklist{"PeekData"} 					= 1;
-$blacklist{"GetDeviceDescription"}		= 1;
-$blacklist{"CreatePalette"}				= 1;
-$blacklist{"CreateDataBuffer"}			= 1;
-$blacklist{"CreateEventBuffer"}			= 1;
-$blacklist{"DetachEventBuffer"}			= 1;
-$blacklist{"AttachEventBuffer"}			= 1;
-$blacklist{"SetSrcGeometry"}			= 1;
-$blacklist{"SetDstGeometry"}			= 1;
-$blacklist{"GetPalette"}				= 1;
-$blacklist{"SetPalette"}				= 1;
-$blacklist{"SetDstGeometry"}			= 1;
-$blacklist{"CreateInputEventBuffer"}	= 1;
-$blacklist{"SendEvent"}					= 1;
-$blacklist{"GetScreen"}					= 1;
-$blacklist{"GetKeymapEntry"}			= 1;
-$blacklist{"SetKeymapEntry"}			= 1;
-$blacklist{"SetRop"}					= 1;
-$blacklist{"SetSrcColorKeyExtended"}	= 1;
-$blacklist{"SetDstColorKeyExtended"}	= 1;
-$blacklist{"DrawMonoGlyphs"}			= 1;
-$blacklist{"SetSrcConvolution"}			= 1;
+$blacklist{GetClipboardData}		= 1;
+$blacklist{GetGL}					= 1;
+$blacklist{Lock}					= 1;
+$blacklist{Unlock}					= 1;
+$blacklist{GetProperty}				= 1;
+$blacklist{RemoveProperty}			= 1;
+$blacklist{GetStringBreak}	 		= 1;
+$blacklist{SetStreamAttributes} 	= 1;
+$blacklist{SetBufferThresholds} 	= 1;
+$blacklist{SetClipboardData}	 	= 1;
+$blacklist{GetClipboardTimeStamp}	= 1;
+$blacklist{Write} 					= 1;
+$blacklist{PutData} 				= 1;
+$blacklist{SetColors}				= 1;
+$blacklist{TextureTriangles}		= 1;
+$blacklist{SetIndexTranslation}		= 1;
+$blacklist{SetMatrix}				= 1;
+$blacklist{SetSrcColorMatrix}		= 1;
+$blacklist{SetKeySelection}			= 1;
+$blacklist{Read}					= 1;
+$blacklist{GetInterface}			= 1;
+$blacklist{EnumInputDevices}		= 1;
+$blacklist{EnumDisplayLayers}		= 1;
+$blacklist{EnumScreens}				= 1;
+$blacklist{EnumVideoModes}			= 1;
+$blacklist{SetProperty} 			= 1;
+$blacklist{EnumEncodings} 			= 1;
+$blacklist{SetRenderCallback} 		= 1;
+$blacklist{GetData} 				= 1;
+$blacklist{PeekData} 				= 1;
+$blacklist{GetDeviceDescription}	= 1;
+$blacklist{CreatePalette}			= 1;
+$blacklist{CreateDataBuffer}		= 1;
+$blacklist{SetSrcGeometry}			= 1;
+$blacklist{SetDstGeometry}			= 1;
+$blacklist{GetPalette}				= 1;
+$blacklist{SetPalette}				= 1;
+$blacklist{SetDstGeometry}			= 1;
+$blacklist{CreateInputEventBuffer}	= 1;
+$blacklist{SendEvent}				= 1;
+$blacklist{GetScreen}				= 1;
+$blacklist{GetKeymapEntry}			= 1;
+$blacklist{SetKeymapEntry}			= 1;
+$blacklist{SetRop}					= 1;
+$blacklist{SetSrcColorKeyExtended}	= 1;
+$blacklist{SetDstColorKeyExtended}	= 1;
+$blacklist{DrawMonoGlyphs}			= 1;
+$blacklist{SetSrcConvolution}		= 1;
+$blacklist{CreateEventBuffer}		= 1;
+$blacklist{DetachEventBuffer}		= 1;
+$blacklist{AttachEventBuffer}		= 1;
 
 ###############
 ## Utilities ##
 ###############
 
-sub trim ($) {
-	local (*str) = @_;
+sub trim {
+	my $str_ref = shift;
 
 	# remove leading white space
-	$str =~ s/^\s*//g;
+	$$str_ref =~ s/^\s*//g;
 
 	# remove trailing white space and new line
-	$str =~ s/\s*$//g;
+	$$str_ref =~ s/\s*$//g;
 }
 
-sub string_to_flag ($$) {
+sub string_to_flag {
 	my ($enum, $name) = @_;
-	my $val = 0;
+	my @entries = @{$types{$enum}->{ENTRIES}};
 
-	#print "Looking flag enum for type $enum on $name ... ";
-	
-	foreach my $entry (@{$types{$enum}->{ENTRIES}}) {
-		
-		if ($entry =~ /\w*$name\w*/i) {
-			#print "yes, we selected $entry for $name\n";
-			return $entry;
-		}
+	foreach (@entries) {
+
+		# try to match case-insensitive the name of the enum flag
+		return $_ if /\w*$name\w*/i;
 	}
 
-	#print "nothing selected for $name\n";
-	return $val;
+	return 0;
 }
 
 #####################
 ## Code Generation ##
 #####################
 
-sub generate_struct_check ($) {
+sub generate_struct_check {
 
-	my ($struct) = @_;
+	my $struct = shift;
 	my $hasflags = $types{$struct}->{HASFLAGS};
 	my $flagval;
 
@@ -173,9 +173,9 @@ sub generate_struct_check ($) {
 					"}\n\n";
 }
 
-sub generate_struct_push ($) {
+sub generate_struct_push {
 
-	my ($struct) = @_;
+	my $struct = shift;
 
 	# Struct push (return)
 	print STRUCTS_H "DLL_LOCAL void push_${struct} (lua_State *L, ${struct} *src);\n";
@@ -200,37 +200,42 @@ sub generate_struct_push ($) {
 
 # TODO: Is there a need for null interface pointer safe-checking?
 #
-sub generate_common_interface ($) {
+sub generate_interface_push {
+	my $interface = shift;
+	print INTERFACE_H	"DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface);\n\n";
+	print INTERFACE_C	"DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface)\n",
+						"{\n",
+						"\t${interface} **p;\n",
+						"\tp = lua_newuserdata(L, sizeof(${interface}*));\n",
+						"\t*p = interface;\n",
+						"\tluaL_getmetatable(L, \"${interface}\");\n",
+						"\tlua_setmetatable(L, -2);\n",
+						"}\n\n";
+}
 
-	my ($interface) = @_;
+sub generate_interface_check {
+	my $interface = shift;
+	print INTERFACE_H	"DLL_LOCAL ${interface} **check_${interface} (lua_State *L, int index);\n\n";
+	print INTERFACE_C	"DLL_LOCAL ${interface} **check_${interface} (lua_State *L, int index)\n",
+						"{\n",
+						"\t${interface} **p;\n",
+						"\tluaL_checktype(L, index, LUA_TUSERDATA);\n",
+						"\tp = (${interface} **) luaL_checkudata(L, index, \"${interface}\");\n",
+						"\tif (p == NULL) luaL_typerror(L, index, \"${interface}\");\n",
+						"\treturn p;\n",
+						"}\n\n";
+}
 
-	print COMMON_H  "DLL_LOCAL int open_${interface} (lua_State *L);\n";
-	print COMMON_H  "DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface);\n";
-	print COMMON_C  "DLL_LOCAL void push_${interface} (lua_State *L, ${interface} *interface)\n",
-					"{\n",
-					"\t${interface} **p;\n",
-					"\tp = lua_newuserdata(L, sizeof(${interface}*));\n",
-					"\t*p = interface;\n",
-					"\tluaL_getmetatable(L, \"${interface}\");\n",
-					"\tlua_setmetatable(L, -2);\n",
-					"}\n\n";
-
-	print COMMON_H  "DLL_LOCAL ${interface} **check_${interface} (lua_State *L, int index);\n\n";
-	print COMMON_C  "DLL_LOCAL ${interface} **check_${interface} (lua_State *L, int index)\n",
-					"{\n",
-					"\t${interface} **p;\n",
-					"\tluaL_checktype(L, index, LUA_TUSERDATA);\n",
-					"\tp = (${interface} **) luaL_checkudata(L, index, \"${interface}\");\n",
-					"\tif (p == NULL) luaL_typerror(L, index, \"${interface}\");\n",
-					"\treturn p;\n",
-					"}\n\n";
+sub generate_interface_open {
+	my $interface = shift;
+	print INTERFACE_H  "DLL_LOCAL int open_${interface} (lua_State *L);\n\n";
 }
 
 ###################
 ## File creation ##
 ###################
 
-sub h_create ($$$) {
+sub h_create {
 	my ($FILE, $filename, $includes) = @_;
 
 	open( $FILE, ">${src_dir}$filename" )
@@ -245,7 +250,7 @@ sub h_create ($$$) {
 				"$includes\n";
 }
 
-sub c_create ($$$) {
+sub c_create {
 	my ($FILE, $filename, $includes) = @_;
 
 	open( $FILE, ">${src_dir}$filename" )
@@ -258,13 +263,13 @@ sub c_create ($$$) {
 				"$includes\n";
 }
 
-sub h_close ($) {
+sub h_close {
 	my ($FILE) = @_;
 	print $FILE "\n#endif\n";
 	close( $FILE );
 }
 
-sub c_close ($) {
+sub c_close {
 	my ($FILE) = @_;
 	close( $FILE );
 }
@@ -278,7 +283,7 @@ sub c_close ($) {
 #
 # TODO: Add full comment support and use it for function types as well.
 #
-sub parse_params () {
+sub parse_params {
 	my @entries;
 
 	while (<>) {
@@ -312,12 +317,13 @@ sub parse_params () {
 # Reads stdin until the end of the interface is reached.
 # Parameter is the interface name.
 #
-sub parse_interface ($) {
+sub parse_interface {
 	my ($interface) = @_;
 
 	trim( \$interface );
 
-	c_create( FH, "${interface}.c", "#include \"common.h\"\n#include \"structs.h\"\n" );
+	# TODO: separate generate from parsing
+	c_create( FH, "${interface}.c", "#include \"common.h\"\n#include \"structs.h\"\n#include \"interfaces.h\"\n" );
 
 	my @funcs;
 
@@ -345,6 +351,7 @@ sub parse_interface ($) {
 			# Arg number starts at 2 (Lua starts at 1 plus self interface which uses 1).
 			my $arg_num = 2;
 
+			# TODO: separate generate from parsing
 			for $param (@params) {
 				# simple
 				if ($param->{PTR} eq "") {
@@ -451,6 +458,7 @@ sub parse_interface ($) {
 				$post_code = "\n".$post_code;
 			}
 
+			# TODO: separate generate from parsing
 			print FH "static int\n",
 						"l_${interface}_${function} (lua_State *L)\n",
 						"{\n",
@@ -491,7 +499,7 @@ sub parse_interface ($) {
 
 	print FH "static const luaL_reg ${interface}_methods[] = {\n";
 
-	for $func (@funcs) {
+	for my $func (@funcs) {
 		print FH "\t{\"$func->{NAME}\",l_${interface}_$func->{NAME}},\n";
 	}
 
@@ -517,6 +525,7 @@ sub parse_interface ($) {
 #
 sub parse_enum {
 	my @entries;
+	my $enum;
 
 	while (<>) {
 		chomp;
@@ -562,12 +571,16 @@ sub parse_enum {
 		else {
 		}
 
-		if ($entry ne "") {
+		# NOTE: This strange "sa" exception is needed because
+		# older headers comments are a bit wicked. This 
+		# is already fixed in newer ones (check git repo).
+		if ($entry ne "" and $entry ne "sa") {
 			push (@entries, $entry);
 		
 			# Map this entry to a global variable. 
 			# Won't have any type checking from the lua side,
 			# as it is only a number variable.
+			# TODO: separate generate from parsing
 			print ENUMS_C "\tlua_pushnumber(L, $entry);\n";
 			print ENUMS_C "\tlua_setglobal(L, \"$entry\");\n\n";
 		}
@@ -585,11 +598,12 @@ sub parse_enum {
 sub parse_struct {
 	my @entries;
 	my $hasflags = 0;
+	my $struct;
 
 	while (<>) {
 		chomp;
 
-		my $entry;
+		my ($entry, $const, $ptr, $array, $text, $type, $t1, $t2);
 
 		# without comment
 		if ( /^\s*(const )?\s*([\w ]+)\s+(\**)([\w]+)([\[\w\]]+)*(\s*:\s*\d+)?;\s*$/ ) {
@@ -630,8 +644,10 @@ sub parse_struct {
 
 			trim( \$struct );
 
-			$struct_list{$struct} = $headline;
-			$type_list{$struct} = $headline;
+			# TODO: Verify this and remove if useless
+			# 
+			#$struct_list{$struct} = $headline;
+			#$type_list{$struct} = $headline;
 
 			last;
 		}
@@ -667,7 +683,7 @@ sub parse_struct {
 # Reads stdin until the end of the function type is reached.
 # Parameters are the return type and function type name.
 #
-sub parse_func ($$) {
+sub parse_func {
 	my ($rtype, $name) = @_;
 
 	my @entries;
@@ -681,7 +697,7 @@ sub parse_func ($$) {
 	while (<>) {
 		chomp;
 
-		my $entry;
+		my ($entry, $const, $type, $ptr, $text, $t1, $t2);
 
 		# without comment
 		if ( /^\s*(const )?\s*([\w ]+)\s+(\**)([\w\d\+\[\]]+)(\s*:\s*\d+)?,?\s*$/ ) {
@@ -708,8 +724,10 @@ sub parse_func ($$) {
 			$text = $t1.$t2;
 		}
 		elsif ( /^\s*\)\;\s*$/ ) {
-			$func_list{$name} = $headline;
-			$type_list{$name} = $headline;
+			# TODO: Verify this and remove if useless
+			# 
+			#$func_list{$name} = $headline;
+			#$type_list{$name} = $headline;
 
 			last;
 		}
@@ -729,10 +747,14 @@ sub parse_func ($$) {
 ## Main ##
 ##########
 
-h_create( COMMON_H, "common.h", "" );
-c_create( COMMON_C, "common.c", "#include \"common.h\"\n" );
+h_create( COMMON_H, "common.h" );
 
-h_create( STRUCTS_H, "structs.h", "" );
+c_create( CORE_C, "core.c", "#include \"interfaces.h\"\n" );
+
+h_create( INTERFACE_H, "interfaces.h", "#include \"common.h\"\n" );
+c_create( INTERFACE_C, "interfaces.c", "#include \"common.h\"\n" );
+
+h_create( STRUCTS_H, "structs.h" );
 c_create( STRUCTS_C, "structs.c", "#include \"common.h\"\n" );
 
 c_create( ENUMS_C, "enums.c", "#include \"common.h\"\n" );
@@ -743,8 +765,7 @@ print COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
 				"#else\n",
 				"\t#define DLL_EXPORT\n",
 				"\t#define DLL_LOCAL\n",
-				"#endif\n\n",
-				"DLL_LOCAL void open_enums (lua_State *L);\n";
+				"#endif\n\n";
 
 # TODO: Global variables or .. ?
 # Start open_enum function. This maps enum symbols to lua global variables.
@@ -755,14 +776,12 @@ while (<>) {
 
 	# Search interface declaration
 	if ( /^\s*\w*DECLARE_INTERFACE\s*\(\s*(\w+)\s\)\s*$/ ) {
-		$interface = $1;
+		my $interface = $1;
 
 		trim( \$interface );
 
 		# Skip blacklisted interfaces
 		next if (defined $blacklist{$interface});
-
-		generate_common_interface($interface);
 
 		if (!defined ($types{$interface})) {
 			$types{$interface} = {
@@ -792,18 +811,20 @@ while (<>) {
 		# Comment, nothing to do 
 	}
 	else {
-		$headline = "";
-		$detailed = "";
-		%options  = ();
+		# TODO: Verify this and remove if useless
+		# 
+		#$headline = "";
+		#$detailed = "";
+		#%options  = ();
 	}
 }
 
-foreach my $s (keys %gen_struct_check) {
-	generate_struct_check($s);
+foreach (keys %gen_struct_check) {
+	generate_struct_check($_);
 }
 
-foreach my $s (keys %gen_struct_push) {
-	generate_struct_push($s);
+foreach (keys %gen_struct_push) {
+	generate_struct_push($_);
 }
 
 # End enum function
@@ -812,14 +833,21 @@ print ENUMS_C 	"}\n";
 #################################
 ## Library initialization code ##
 #################################
+my @interfaces = grep { $types{$_}{KIND} eq "interface" } keys %types;
+foreach (@interfaces) {
+	generate_interface_open($_);
+	generate_interface_check($_);
+	generate_interface_push($_);
+}
 
-print COMMON_C 	"static int l_DirectFBInit (lua_State *L)\n",
+
+print CORE_C 	"static int l_DirectFBInit (lua_State *L)\n",
 			   	"{\n",
 				"\tDirectFBInit(NULL, NULL);\n",
 				"\treturn 0;\n",
 				"}\n\n";
 
-print COMMON_C	"static int l_DirectFBCreate (lua_State *L)\n",
+print CORE_C	"static int l_DirectFBCreate (lua_State *L)\n",
 				"{\n",
 				"\tDFBResult res;\n",
 				"\tIDirectFB *interface;\n",
@@ -830,30 +858,34 @@ print COMMON_C	"static int l_DirectFBCreate (lua_State *L)\n",
 				"\treturn 1;\n",
 				"}\n\n";
 
-print COMMON_C  "static const luaL_reg dfb_m[] = {\n",
+print CORE_C  "static const luaL_reg dfb_m[] = {\n",
 				"\t{\"DirectFBCreate\", l_DirectFBCreate},\n",
 				"\t{\"DirectFBInit\", l_DirectFBInit},\n",
 				"\t{NULL, NULL}\n",
 				"};\n\n";
 
-print COMMON_C "int LUALIB_API luaopen_$pkgname (lua_State *L)\n",
+print CORE_C "int LUALIB_API luaopen_$pkgname (lua_State *L)\n",
 	 		   "{\n";
 
 my @interfaces = grep { $types{$_}{KIND} eq "interface" } keys %types;
-foreach my $name (@interfaces) {
-	print COMMON_C "\topen_$name(L);\n",
+foreach (@interfaces) {
+	print CORE_C "\topen_$_(L);\n",
 }
 
-print COMMON_C "\n",
+print CORE_C "\n",
 			   "\tluaL_openlib(L, \"$pkgname\", dfb_m, 0);\n",
 				"\topen_enums(L);\n",
 			   "\treturn 1;\n",
 			   "}";
 
 h_close( COMMON_H );
-c_close( COMMON_C );
+
+c_close( CORE_C );
 
 h_close( STRUCTS_H );
 c_close( STRUCTS_C );
+
+h_close( INTERFACE_H );
+c_close( INTERFACE_C );
 
 c_close( ENUMS_C );
