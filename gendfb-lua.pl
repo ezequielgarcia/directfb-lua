@@ -313,7 +313,7 @@ sub parse_interface ($) {
 
 	trim( \$interface );
 
-	c_create( FH, "${interface}.c", "#include \"common.h\"\n#include \"structs.h\"\n" );
+	c_create( FH, "${interface}.c", "#include \"common.h\"\n#include \"structs.h\"\n#include \"enums.h\"\n" );
 
 	my @funcs;
 
@@ -560,12 +560,6 @@ sub parse_enum {
 
 		if ($entry ne "") {
 			push (@entries, $entry);
-		
-			# Map this entry to a global variable. 
-			# Won't have any type checking from the lua side,
-			# as it is only a number variable.
-			print ENUMS_C "\tlua_pushnumber(L, $entry);\n";
-			print ENUMS_C "\tlua_setglobal(L, \"$entry\");\n\n";
 		}
 	}
 
@@ -656,7 +650,6 @@ sub parse_struct {
 		ENTRIES => \@entries,
 		HASFLAGS => $hasflags
 	};
-
 }
 
 #
@@ -726,12 +719,13 @@ sub parse_func ($$) {
 ##########
 
 h_create( COMMON_H, "common.h", "" );
-c_create( COMMON_C, "common.c", "#include \"common.h\"\n" );
+c_create( COMMON_C, "common.c", "#include \"common.h\"\n#include \"enums.h\"\n" );
 
-h_create( STRUCTS_H, "structs.h", "" );
-c_create( STRUCTS_C, "structs.c", "#include \"common.h\"\n" );
+h_create( STRUCTS_H, "structs.h", "#include \"common.h\"\n" );
+c_create( STRUCTS_C, "structs.c", "#include \"structs.h\"\n#include \"common.h\"\n#include \"enums.h\"\n" );
 
-c_create( ENUMS_C, "enums.c", "#include \"common.h\"\n" );
+h_create( ENUMS_H, "enums.h", "#include \"common.h\"\n" );
+c_create( ENUMS_C, "enums.c", "#include \"enums.h\"\n#include \"common.h\"\n" );
 
 print COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
 				"\t#define DLL_EXPORT __attribute__((visibility(\"default\")))\n",
@@ -739,13 +733,8 @@ print COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
 				"#else\n",
 				"\t#define DLL_EXPORT\n",
 				"\t#define DLL_LOCAL\n",
-				"#endif\n\n",
-				"DLL_LOCAL void open_enums (lua_State *L);\n";
+				"#endif\n\n";
 
-# TODO: Global variables or .. ?
-# Start open_enum function. This maps enum symbols to lua global variables.
-print ENUMS_C 	"DLL_LOCAL void open_enums (lua_State *L)\n",
-			   	"{\n";
 while (<>) {
 	chomp;
 
@@ -802,12 +791,35 @@ foreach my $s (keys %gen_struct_push) {
 	generate_struct_push($s);
 }
 
-# End enum function
-print ENUMS_C 	"}\n";
 
 #################################
 ## Library initialization code ##
 #################################
+
+print ENUMS_H "DLL_LOCAL void open_enums (lua_State *L);\n";
+print ENUMS_C "DLL_LOCAL void open_enums (lua_State *L)\n",
+			  "{\n";
+
+foreach (keys %gen_enum_check) {
+	print ENUMS_C "\tbuild_$_(L);\n";
+}
+
+print ENUMS_C "\n";
+
+foreach my $enum (keys %gen_enum_push) {
+	foreach (@{$types{$enum}->{ENTRIES}}) {
+		print ENUMS_C 	"\tlua_pushnumber(L, $_);\n",
+						"\tlua_setglobal(L, \"$_\");\n\n";
+	}
+}
+foreach my $enum (keys %gen_enum_check) {
+	foreach (@{$types{$enum}->{ENTRIES}}) {
+		print ENUMS_C 	"\tlua_pushnumber(L, $_);\n",
+						"\tlua_setglobal(L, \"$_\");\n\n";
+	}
+}
+
+print ENUMS_C "}\n";
 
 print COMMON_C 	"static int l_DirectFBInit (lua_State *L)\n",
 			   	"{\n",
@@ -852,4 +864,5 @@ c_close( COMMON_C );
 h_close( STRUCTS_H );
 c_close( STRUCTS_C );
 
+h_close( ENUMS_H );
 c_close( ENUMS_C );
