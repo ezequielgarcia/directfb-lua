@@ -4,10 +4,10 @@ require 'directfb'
 -- DFB Initialization
 directfb.DirectFBInit()
 dfb = directfb.DirectFBCreate()
-dfb:SetCooperativeLevel(DFSCL_NORMAL)
+dfb:SetCooperativeLevel('DFSCL_NORMAL')
 
--- Surface creation, notice the SUM instead of OR
-surface = dfb:CreateSurface {caps=DSCAPS_PRIMARY+DSCAPS_FLIPPING}
+-- Surface creation
+surface = dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_FLIPPING'}
 surface:Clear( 0x80, 0x80, 0x80, 0xff )
 
 -- Font creation
@@ -25,4 +25,4 @@ surface:Blit(image_surf, nil, 100, 100)
 surface:SetColor(0, 0, 0, 0xff)
 surface:DrawString('DirectFB meets Lua', -1, 10, 10, DSTF_TOPLEFT)
 
-surface:Flip(nil, 0)
+surface:Flip(nil, 'DSFLIP_ONSYNC|DSFLIP_WAIT|DSFLIP_BLIT')
