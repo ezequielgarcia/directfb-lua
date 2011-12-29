@@ -87,21 +87,17 @@ sub trim ($) {
 	$str =~ s/\s*$//g;
 }
 
-sub string_to_flag ($$) {
+sub string_to_flag {
 	my ($enum, $name) = @_;
 	my $val = 0;
 
-	#print "Looking flag enum for type $enum on $name ... ";
-	
 	foreach my $entry (@{$types{$enum}->{ENTRIES}}) {
 		
 		if ($entry =~ /\w*$name\w*/i) {
-			#print "yes, we selected $entry for $name\n";
 			return $entry;
 		}
 	}
 
-	#print "nothing selected for $name\n";
 	return $val;
 }
 
@@ -173,7 +169,7 @@ sub generate_struct_check ($) {
 					"}\n\n";
 }
 
-sub generate_struct_push ($) {
+sub generate_struct_push {
 
 	my ($struct) = @_;
 
@@ -200,7 +196,7 @@ sub generate_struct_push ($) {
 
 # TODO: Is there a need for null interface pointer safe-checking?
 #
-sub generate_common_interface ($) {
+sub generate_common_interface {
 
 	my ($interface) = @_;
 
@@ -230,7 +226,7 @@ sub generate_common_interface ($) {
 ## File creation ##
 ###################
 
-sub h_create ($$$) {
+sub h_create {
 	my ($FILE, $filename, $includes) = @_;
 
 	open( $FILE, ">${src_dir}$filename" )
@@ -245,7 +241,7 @@ sub h_create ($$$) {
 				"$includes\n";
 }
 
-sub c_create ($$$) {
+sub c_create {
 	my ($FILE, $filename, $includes) = @_;
 
 	open( $FILE, ">${src_dir}$filename" )
@@ -258,13 +254,13 @@ sub c_create ($$$) {
 				"$includes\n";
 }
 
-sub h_close ($) {
+sub h_close {
 	my ($FILE) = @_;
 	print $FILE "\n#endif\n";
 	close( $FILE );
 }
 
-sub c_close ($) {
+sub c_close {
 	my ($FILE) = @_;
 	close( $FILE );
 }
@@ -461,7 +457,7 @@ sub parse_interface ($) {
 						"${pre_code}\n",
 						"\tres = (*thiz)->${function}( *thiz${args} );\n",
 						"\tif (res != DFB_OK)\n",
-						"\t\treturn luaL_error(L, \"Error %d on DirectFB call to %s\::%s\", res, \"${interface}\", \"${function}\");\n",
+						"\t\treturn luaL_error(L, \"\\nError in function %s\::%s\\n%s\", \"${interface}\", \"${function}\", DirectFBErrorString(res));\n",
 						"${post_code}\n",
 						"\treturn ${return_val};\n",
 						"}\n\n";
@@ -840,8 +836,8 @@ print COMMON_C "int LUALIB_API luaopen_$pkgname (lua_State *L)\n",
 	 		   "{\n";
 
 my @interfaces = grep { $types{$_}{KIND} eq "interface" } keys %types;
-foreach my $name (@interfaces) {
-	print COMMON_C "\topen_$name(L);\n",
+foreach (@interfaces) {
+	print COMMON_C "\topen_$_(L);\n",
 }
 
 print COMMON_C "\n",
