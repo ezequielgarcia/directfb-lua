@@ -16,7 +16,6 @@ my %gen_struct_push;
 ## Interface blacklist ##
 #########################
 my %blacklist;
-$blacklist{IDirectFBVideoProvider}	= 1;
 $blacklist{IDirectFBPalette}		= 1;
 $blacklist{IDirectFBGL}				= 1;
 $blacklist{IDirectFBGL2}			= 1;
@@ -55,7 +54,6 @@ $blacklist{EnumVideoModes}			= 1;
 $blacklist{SetProperty} 			= 1;
 $blacklist{EnumEncodings} 			= 1;
 $blacklist{SetRenderCallback} 		= 1;
-$blacklist{PlayTo}				 	= 1;
 $blacklist{GetData} 				= 1;
 $blacklist{PeekData} 				= 1;
 $blacklist{GetDeviceDescription}	= 1;
@@ -67,7 +65,6 @@ $blacklist{GetPalette}				= 1;
 $blacklist{SetPalette}				= 1;
 $blacklist{SetDstGeometry}			= 1;
 $blacklist{CreateInputEventBuffer}	= 1;
-$blacklist{CreateVideoProvider}		= 1;
 $blacklist{SendEvent}				= 1;
 $blacklist{GetScreen}				= 1;
 $blacklist{GetKeymapEntry}			= 1;
