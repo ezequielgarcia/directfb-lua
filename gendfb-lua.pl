@@ -109,6 +109,41 @@ sub string_to_flag {
 ## Code Generation ##
 #####################
 
+sub generate_enum_check {
+
+	my ($enum) = @_;
+
+	# enum build function
+	print ENUMS_C "static void build_$enum(lua_State *L)\n",
+				  "{\n",
+				  "\tlua_newtable(L);\n";
+
+	foreach (@{$types{$enum}->{ENTRIES}}) {
+		print ENUMS_C "\tlua_pushnumber(L, $_);\n",
+					  "\tlua_setfield(L, -2, \"$_\");\n";
+	}
+
+	print ENUMS_C "\tlua_setfield(L, -2, \"$enum\");\n",
+				  "}\n\n";
+
+	# check function
+	print ENUMS_H "DLL_LOCAL ${enum} check_${enum} (lua_State *L, int index);\n";
+	print ENUMS_C "DLL_LOCAL ${enum} check_${enum} (lua_State *L, int index)\n",
+			      "{\n",
+				  "\tint result = 0;\n",
+				  "\tconst char *str;\n",
+				  "\tif (lua_isnoneornil(L, index))\n",
+				  "\t\treturn 0;\n",
+				  "\tif (lua_isnumber(L, index))\n",
+				  "\t\treturn luaL_checknumber(L, index);\n",
+				  "\tstr = luaL_checkstring(L, index);\n",
+				  "\tlua_getglobal(L, \"$pkgname\");\n",
+				  "\tlua_getfield(L, -1, \"$enum\");\n",
+				  "\tresult = string2enum(L, str, \"$enum\");\n",
+				  "\treturn result;\n",
+				  "}\n\n";
+}
+
 sub generate_struct_check {
 
 	my $struct = shift;
@@ -154,8 +189,16 @@ sub generate_struct_check {
 				}
 				else {
 
-					print STRUCTS_C "\tif (!lua_isnil(L, -1)) {\n", 
-									"\t\tdst->$entry->{NAME} = lua_tonumber(L, -1);\n";
+					print STRUCTS_C "\tif (!lua_isnil(L, -1)) {\n";
+
+					if ($types{$entry->{TYPE}}->{KIND} eq "enum") {
+						print STRUCTS_C "\t\tdst->$entry->{NAME} = check_$entry->{TYPE}(L, -1);\n";
+						$gen_enum_check{$entry->{TYPE}} = 1;
+					}
+					else {
+						print STRUCTS_C "\t\tdst->$entry->{NAME} = lua_tonumber(L, -1);\n";
+					}
+
 					if ($hasflags) {
 						$flagval = string_to_flag("${struct}Flags", $entry->{NAME});
 						print STRUCTS_C "\t\tif (autoflag)\n", 
@@ -323,7 +366,7 @@ sub parse_interface {
 	trim( \$interface );
 
 	# TODO: separate generate from parsing
-	c_create( FH, "${interface}.c", "#include \"common.h\"\n#include \"structs.h\"\n#include \"interfaces.h\"\n" );
+	c_create( FH, "${interface}.c", "#include \"common.h\"\n#include \"structs.h\"\n#include \"interfaces.h\"\n#include \"enums.h\"\n" );
 
 	my @funcs;
 
@@ -355,9 +398,18 @@ sub parse_interface {
 			for $param (@params) {
 				# simple
 				if ($param->{PTR} eq "") {
-					$declaration .= "\t$param->{TYPE} $param->{NAME};\n";
-					$pre_code .= "\t$param->{NAME} = luaL_checkinteger(L, $arg_num);\n";
-					$args .= ", $param->{NAME}";
+					# enum input?
+					if ($types{$param->{TYPE}}->{KIND} eq "enum") {
+						$declaration .= "\t$param->{TYPE} $param->{NAME};\n";
+						$pre_code .= "\t$param->{NAME} = check_$param->{TYPE}(L, $arg_num);\n";
+						$args .= ", $param->{NAME}";
+						$gen_enum_check{$param->{TYPE}} = 1;
+					}
+					else {
+						$declaration .= "\t$param->{TYPE} $param->{NAME};\n";
+						$pre_code .= "\t$param->{NAME} = luaL_checkinteger(L, $arg_num);\n";
+						$args .= ", $param->{NAME}";
+					}
 				}
 				# pointer
 				elsif ($param->{PTR} eq "*") {
@@ -414,11 +466,21 @@ sub parse_interface {
 							$args .= ", *$param->{NAME}";
 						}
 						# enum? output
+						# TODO: Add proper enum output. Right now, 
+						# we just return a number.
 						else {
 							$declaration .= "\t$param->{TYPE} $param->{NAME};\n";
 							$args .= ", &$param->{NAME}";
-							$post_code .= "\tlua_pushnumber(L, $param->{NAME});\n";
 							$return_val++;
+							#if ($types{$param->{TYPE}}->{KIND} eq "enum") {
+							#	print "Enum output found $param->{TYPE}\n";
+							#	$post_code .= "\tpush_$param->{TYPE}(L, $param->{NAME});\n";
+							#	$gen_enum_push{$param->{TYPE}} = 1;
+							#}
+							#else {
+								$post_code .= "\tlua_pushnumber(L, $param->{NAME});\n";
+								$gen_enum_push{$param->{TYPE}} = 1;
+							#}
 						}
 					}
 				}
@@ -469,7 +531,7 @@ sub parse_interface {
 						"${pre_code}\n",
 						"\tres = (*thiz)->${function}( *thiz${args} );\n",
 						"\tif (res != DFB_OK)\n",
-						"\t\treturn luaL_error(L, \"Error %d on DirectFB call to %s\::%s\", res, \"${interface}\", \"${function}\");\n",
+						"\t\treturn luaL_error(L, \"\\nError in function %s\::%s\\n%s\", \"${interface}\", \"${function}\", DirectFBErrorString(res));\n",
 						"${post_code}\n",
 						"\treturn ${return_val};\n",
 						"}\n\n";
@@ -576,13 +638,6 @@ sub parse_enum {
 		# is already fixed in newer ones (check git repo).
 		if ($entry ne "" and $entry ne "sa") {
 			push (@entries, $entry);
-		
-			# Map this entry to a global variable. 
-			# Won't have any type checking from the lua side,
-			# as it is only a number variable.
-			# TODO: separate generate from parsing
-			print ENUMS_C "\tlua_pushnumber(L, $entry);\n";
-			print ENUMS_C "\tlua_setglobal(L, \"$entry\");\n\n";
 		}
 	}
 
@@ -676,7 +731,6 @@ sub parse_struct {
 		ENTRIES => \@entries,
 		HASFLAGS => $hasflags
 	};
-
 }
 
 #
@@ -749,15 +803,16 @@ sub parse_func {
 
 h_create( COMMON_H, "common.h" );
 
-c_create( CORE_C, "core.c", "#include \"interfaces.h\"\n" );
+c_create( CORE_C, "core.c", "#include \"interfaces.h\"\n#include \"enums.h\"\n" );
 
 h_create( INTERFACE_H, "interfaces.h", "#include \"common.h\"\n" );
 c_create( INTERFACE_C, "interfaces.c", "#include \"common.h\"\n" );
 
 h_create( STRUCTS_H, "structs.h" );
-c_create( STRUCTS_C, "structs.c", "#include \"common.h\"\n" );
+c_create( STRUCTS_C, "structs.c", "#include \"common.h\"\n#include \"enums.h\"\n" );
 
-c_create( ENUMS_C, "enums.c", "#include \"common.h\"\n" );
+h_create( ENUMS_H, "enums.h", "#include \"common.h\"\n" );
+c_create( ENUMS_C, "enums.c", "#include \"enums.h\"\n#include \"common.h\"\n" );
 
 print COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
 				"\t#define DLL_EXPORT __attribute__((visibility(\"default\")))\n",
@@ -767,10 +822,35 @@ print COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
 				"\t#define DLL_LOCAL\n",
 				"#endif\n\n";
 
-# TODO: Global variables or .. ?
-# Start open_enum function. This maps enum symbols to lua global variables.
-print ENUMS_C 	"DLL_LOCAL void open_enums (lua_State *L)\n",
-			   	"{\n";
+print ENUMS_C "static int string2enum(lua_State *L, const char *str, const char* type)\n",
+			  "{\n",
+			  "\tint result = 0;\n",
+			  "\tconst char *str_start, *str_end;\n",
+			  "\tstr_start = str;\n",
+			  "\twhile (1) {\n",
+			  "\t\tif (*str_start == 0)\n",
+			  "\t\t\tbreak;\n",
+			  "\t\tif (!isalnum(*str_start) && *str_start != '_') {\n",
+			  "\t\t\tstr_start++;\n",
+			  "\t\t\tcontinue;\n",
+			  "\t\t}\n",
+			  "\t\tstr_end = str_start;\n",
+			  "\t\twhile (isalnum(*str_end) || *str_end == '_') {\n",
+			  "\t\t\tstr_end++;\n",
+			  "\t\t\tcontinue;\n",
+			  "\t\t}\n",
+			  "\t\tlua_pushlstring(L, str_start, str_end-str_start);\n",
+			  "\t\tlua_gettable(L, -2);\n",
+			  "\t\tif (!lua_isnumber(L, -1))\n",
+			  "\t\t\tluaL_error(L, \"'%s' is not a valid '%s' value\", str_start, type);\n",
+			  "\t\tresult |= lua_tointeger(L, -1);\n",
+			  "\t\tlua_pop(L, 1);\n",
+			  "\t\tstr_start = str_end;\n",
+			  "\t}\n",
+			  "\tlua_pop(L, 1);\n",
+			  "\treturn result;\n",
+			  "}\n\n";
+
 while (<>) {
 	chomp;
 
@@ -827,8 +907,10 @@ foreach (keys %gen_struct_push) {
 	generate_struct_push($_);
 }
 
-# End enum function
-print ENUMS_C 	"}\n";
+foreach my $s (keys %gen_enum_check) {
+	generate_enum_check($s);
+}
+
 
 #################################
 ## Library initialization code ##
@@ -840,6 +922,30 @@ foreach (@interfaces) {
 	generate_interface_push($_);
 }
 
+print ENUMS_H "DLL_LOCAL void open_enums (lua_State *L);\n";
+print ENUMS_C "DLL_LOCAL void open_enums (lua_State *L)\n",
+			  "{\n";
+
+foreach (keys %gen_enum_check) {
+	print ENUMS_C "\tbuild_$_(L);\n";
+}
+
+print ENUMS_C "\n";
+
+foreach my $enum (keys %gen_enum_push) {
+	foreach (@{$types{$enum}->{ENTRIES}}) {
+		print ENUMS_C 	"\tlua_pushnumber(L, $_);\n",
+						"\tlua_setglobal(L, \"$_\");\n\n";
+	}
+}
+foreach my $enum (keys %gen_enum_check) {
+	foreach (@{$types{$enum}->{ENTRIES}}) {
+		print ENUMS_C 	"\tlua_pushnumber(L, $_);\n",
+						"\tlua_setglobal(L, \"$_\");\n\n";
+	}
+}
+
+print ENUMS_C "}\n";
 
 print CORE_C 	"static int l_DirectFBInit (lua_State *L)\n",
 			   	"{\n",
@@ -888,4 +994,5 @@ c_close( STRUCTS_C );
 h_close( INTERFACE_H );
 c_close( INTERFACE_C );
 
+h_close( ENUMS_H );
 c_close( ENUMS_C );

@@ -3,10 +3,8 @@ require 'directfb'
 
 directfb.DirectFBInit()
 dfb = directfb.DirectFBCreate()
-dfb:SetCooperativeLevel(DFSCL_NORMAL)
 
-primary = dfb:CreateSurface {caps=DSCAPS_PRIMARY+DSCAPS_FLIPPING}
-w,h = primary:GetSize()
+primary = dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_FLIPPING'}
 
 -- Render tux image to tux surface
 prov = dfb:CreateImageProvider('lua.gif')
@@ -23,7 +21,7 @@ local x,y = 100, 100
 while keyboard:GetKeyState(DIKI_ESCAPE) == DIKS_UP do
 
 	-- Clear surface
-	primary:Clear(0, 0, 0, 0xff)
+	primary:Clear( 0x80, 0x80, 0x80, 0xff )
 	
 	-- Draw tux
 	primary:Blit(tux, nil, x, y)
@@ -45,4 +43,5 @@ while keyboard:GetKeyState(DIKI_ESCAPE) == DIKS_UP do
 		y = y - 1 
 	end
 end
+
 
