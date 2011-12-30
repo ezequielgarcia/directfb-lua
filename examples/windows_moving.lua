@@ -56,6 +56,7 @@ while true do
 		x = event.cx
 		y = event.cy
 		focus:GrabPointer()
+		focus:Raise()
 
 	-- Mouse button up releases the window
 	elseif event.type == DWET_BUTTONUP then
