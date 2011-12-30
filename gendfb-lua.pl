@@ -12,6 +12,7 @@ my $src_dir = "./src/";
 my %types;
 my %gen_struct_check;
 my %gen_struct_push;
+my %gen_union_push;
 my %gen_enum_check;
 
 #########################
@@ -23,7 +24,13 @@ $blacklist{IDirectFBGL}				= 1;
 $blacklist{IDirectFBGL2}			= 1;
 $blacklist{IDirectFBGL2Context}		= 1;
 $blacklist{IDirectFBScreen}			= 1;
-$blacklist{IDirectFBEventBuffer}	= 1;
+
+####################
+## Type blacklist ##
+####################
+$blacklist{DFBUserEvent}			= 1;
+$blacklist{DFBVideoProviderEvent}	= 1;
+$blacklist{DFBUniversalEvent}		= 1;
 	
 ########################
 ## Function blacklist ##
@@ -76,9 +83,6 @@ $blacklist{SetSrcColorKeyExtended}	= 1;
 $blacklist{SetDstColorKeyExtended}	= 1;
 $blacklist{DrawMonoGlyphs}			= 1;
 $blacklist{SetSrcConvolution}		= 1;
-$blacklist{CreateEventBuffer}		= 1;
-$blacklist{DetachEventBuffer}		= 1;
-$blacklist{AttachEventBuffer}		= 1;
 
 ###############
 ## Utilities ##
@@ -218,6 +222,22 @@ sub generate_struct_check {
 					"}\n\n";
 }
 
+# TODO: This is way too specific. Should be more generic. Works for the moment, though.
+sub generate_union_push {
+
+	my $union = shift;
+
+	# Union push (return)
+	print STRUCTS_H "DLL_LOCAL void push_${union} (lua_State *L, ${union} *src);\n";
+	print STRUCTS_C "DLL_LOCAL void push_${union} (lua_State *L, ${union} *src)\n",
+			        "{\n",
+					"\tif (src->clazz == DFEC_WINDOW)\n",
+					"\t\tpush_DFBWindowEvent (L, &src->window);\n",
+					"\telse if (src->clazz == DFEC_INPUT)\n",
+					"\t\tpush_DFBInputEvent (L, &src->input);\n",
+					"}\n\n";
+}
+
 sub generate_struct_push {
 
 	my $struct = shift;
@@ -229,6 +249,8 @@ sub generate_struct_push {
 				    "\tlua_newtable(L);\n\n";
 
 	foreach my $entry (@{$types{$struct}->{ENTRIES}}) {
+		# FIXME: Little hack to avoid struct timeval
+		next if ($entry->{TYPE} eq "struct timeval");
 
 		print STRUCTS_C "\tlua_pushstring(L, \"$entry->{NAME}\");\n";
 		if ($entry->{ARRAY} ne "" and $entry->{TYPE} eq "char") {
@@ -453,6 +475,14 @@ sub parse_interface {
 							$pre_code .= "\t#warning unimplemented (context pointer)\n";
 							$args .= ", NULL";
 						}
+						# union output
+						elsif ($types{$param->{TYPE}}->{KIND} eq "union") {
+							$declaration .= "\t$param->{TYPE} $param->{NAME};\n";
+							$args .= ", &$param->{NAME}";
+							$post_code .= "\tpush_$param->{TYPE}(L, &$param->{NAME});\n";
+							$return_val++;
+							$gen_union_push{$param->{TYPE}} = 1;
+						}
 						# struct output
 						elsif ($types{$param->{TYPE}}->{KIND} eq "struct") {
 							$declaration .= "\t$param->{TYPE} $param->{NAME};\n";
@@ -647,6 +677,93 @@ sub parse_enum {
 		NAME    => $enum,
 		KIND    => "enum",
 		ENTRIES => \@entries
+	};
+}
+
+# Reads stdin until the end of the enum is reached.
+#
+sub parse_union {
+	my @entries;
+	my $union;
+
+	while (<>) {
+		chomp;
+
+		my ($entry, $const, $ptr, $array, $text, $type, $t1, $t2);
+
+		# without comment
+		if ( /^\s*(const )?\s*([\w ]+)\s+(\**)([\w]+)([\[\w\]]+)*(\s*:\s*\d+)?;\s*$/ ) {
+			$const = $1;
+			$type = $2;
+			$ptr = $3;
+			$entry = $4.$6;
+			$array = $5;
+			$text = "";
+		}
+		# complete one line entry
+		elsif ( /^\s*(const )?\s*([\w ]+)\s+(\**)([\w]+)([\[\]\w]+)*(\s*:\s*\d+)?;\s*\/\*\s*(.+)\*\/\s*$/ ) {
+			$const = $1;
+			$type = $2;
+			$ptr = $3;
+			$entry = $4.$6;
+			$array = $5;
+			$text = $7;
+		}
+		# with comment opening
+		elsif ( /^\s*(const )?\s*([\w ]+)\s+(\**)([\w]+)([\[\w\]]+)*(\s*:\s*\d+)?;\s*\/\*\s*(.+)\s*$/ ) {
+			$const = $1;
+			$type = $2;
+			$ptr = $3;
+			$entry = $4.$6;
+			$array = $5;
+			$text = $t1.$t2;
+		}
+		# sub
+		elsif ( /^\s*struct\s*\{\s*$/ ) {
+			while (<>) {
+				chomp;
+				last if /^\s*\}\s*([\w\d\+\[\]]+)\s*\;\s*/;
+			}
+		}
+		elsif ( /^\s*\}\s*(\w+)\s*\;\s*$/ ) {
+			$union = $1;
+
+			print("Union found! $union\n ");
+
+			trim( \$union );
+
+			last;
+		}
+
+		trim( \$type );
+
+		if ($entry ne "") {
+
+			if ($types{$type}->{KIND} eq "struct") {
+				unless (defined $blacklist{$type}) {
+					$gen_struct_push{$type} = 1;
+				}
+			}
+			elsif ($types{$type}->{KIND} eq "enum") {
+			}
+			else {
+			}
+
+			push (@entries, {
+					NAME   => $entry,
+					CONST  => $const,
+					TYPE   => $type,
+					PTR    => $ptr,
+					ARRAY  => $array
+					} );
+		}
+	}
+
+
+	$types{$union} = {
+		NAME    => $union,
+		KIND    => "union",
+		ENTRIES => \@entries,
 	};
 }
 
@@ -880,8 +997,11 @@ while (<>) {
 	elsif ( /^\s*typedef\s+enum\s*\{?\s*$/ ) {
 		parse_enum();
 	}
-	elsif ( /^\s*typedef\s+(struct|union)\s*\{?\s*$/ ) {
+	elsif ( /^\s*typedef\s+(struct)\s*\{?\s*$/ ) {
 		parse_struct();
+	}
+	elsif ( /^\s*typedef\s+(union)\s*\{?\s*$/ ) {
+		parse_union();
 	}
 	elsif ( /^\s*typedef\s+(\w+)\s+\(\*(\w+)\)\s*\(\s*$/ ) {
 		parse_func( $1, $2 );
@@ -918,6 +1038,9 @@ foreach my $s (keys %gen_enum_check) {
 	generate_enum_check($s);
 }
 
+foreach (keys %gen_union_push) {
+	generate_union_push($_);
+}
 
 #################################
 ## Library initialization code ##
