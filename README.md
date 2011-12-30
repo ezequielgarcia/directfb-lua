@@ -31,12 +31,14 @@ Features
 --------
 
 **Automatic interface release:**
+
 Taking advantage of Lua garbage collection, there is no need to explicitly 
 release interfaces. You can just let Lua decide when to deallocate it,
 calling Release() for you. 
 If you **do** need to release some interface immediately, of course you can.
 
 **Automatic flags detection:**
+
 As undefined table members are nil-valued in Lua you can let him
 detect your description flags. For instance you can do:
 
@@ -44,10 +46,11 @@ detect your description flags. For instance you can do:
     desc.caps = 'DSCAPS_PRIMARY|DSCAPS_FLIPPING'
     surface = dfb:CreateSurface(desc)
 
-without the need to define *desc.flags* member. If you want define this member,
+without the need to define *desc.flags* member. If you want to define this member,
 then the automatic detection get disabled.
 
 **Safe enums types**
+
 So far we support two forms of enums: string and number. You can see both in action here:
 
     surf1 = dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_FLIPPING'}
