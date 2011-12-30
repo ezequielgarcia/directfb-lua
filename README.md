@@ -41,11 +41,24 @@ As undefined table members are nil-valued in Lua you can let him
 detect your description flags. For instance you can do:
 
     desc = {}
-    desc.caps = DSCAPS_PRIMARY+DSCAPS_FLIPPING
+    desc.caps = 'DSCAPS_PRIMARY|DSCAPS_FLIPPING'
     surface = dfb:CreateSurface(desc)
 
 without the need to define *desc.flags* member. If you want define this member,
 then the automatic detection get disabled.
+
+**Safe enums types**
+So far we support two forms of enums: string and number. You can see both in action here:
+
+    surf1 = dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_FLIPPING'}
+	surf2 = dfb:CreateSurface {caps=DSCAPS_PRIMARY+DSCAPS_FLIPPING}
+
+The string form is the recommended one, since it checks type coherence. Anyway, you won't have to use enums too much because of automatic flag detection. Plus, you can use any token you like to separate names, this is all the same (or should be):
+
+    caps = 'DSCAPS_PRIMARY|DSCAPS_FLIPPING'
+    caps = 'DSCAPS_PRIMARY,DSCAPS_FLIPPING'
+    caps = 'DSCAPS_PRIMARY @ DSCAPS_FLIPPING'
+    caps = 'DSCAPS_PRIMARY ###   DSCAPS_FLIPPING'
 
 History
 -------
@@ -88,12 +101,12 @@ A quick example with font and image rendering:
     -- DFB Initialization
     directfb.DirectFBInit()
     dfb = directfb.DirectFBCreate()
-    dfb:SetCooperativeLevel(DFSCL_EXCLUSIVE)
+    dfb:SetCooperativeLevel('DFSCL_EXCLUSIVE')
 
     -- Surface creation, notice the SUM instead of OR
     desc = {}
     desc.flags = DSDESC_CAPS
-    desc.caps = DSCAPS_PRIMARY + DSCAPS_FLIPPING
+    desc.caps = 'DSCAPS_PRIMARY|DSCAPS_FLIPPING'
 
     surface = dfb:CreateSurface(desc)
 	surface:Clear( 0x80, 0x80, 0x80, 0xff )
@@ -112,7 +125,7 @@ A quick example with font and image rendering:
 
 	surface:Blit(image_surf, nil, 100, 100)
 	surface:SetColor(0, 0, 0, 0xff)
-	surface:DrawString('DirectFB meets Lua', -1, 10, 10, DSTF_TOPLEFT)
+	surface:DrawString('DirectFB meets Lua', -1, 10, 10, 'DSTF_TOPLEFT')
 
 	surface:Flip(nil, 0)
 
@@ -123,17 +136,16 @@ Another example with a couple of windows:
     -- DFB Initialization
     directfb.DirectFBInit()
     dfb = directfb.DirectFBCreate()
-    dfb:SetCooperativeLevel(DFSCL_FULLSCREEN)
+    dfb:SetCooperativeLevel('DFSCL_FULLSCREEN')
 
     -- Get layer
     layer = dfb:GetDisplayLayer()
 
     -- Create window
     desc = {}
-    desc.flags = DWDESC_WIDTH + DWDESC_HEIGHT + DWDESC_SURFACE_CAPS
     desc.width = 100
     desc.height = 100
-    desc.surface_caps = DSCAPS_FLIPPING
+    desc.surface_caps = 'DSCAPS_FLIPPING'
     w1 = layer:CreateWindow(desc)
     w2 = layer:CreateWindow(desc)
 
