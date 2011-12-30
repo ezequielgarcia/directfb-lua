@@ -20,6 +20,8 @@ So far the supported interfaces are:
 * IDirectFBImageProvider
 * IDirectFBFont
 * IDirectFBInputDevice
+* IDirectFBVideoProvider (experimental)
+* IDirectFBEventBuffer (experimental)
 
 The rest is still not supported, but the plan is to support (almost) everything.
 Since Lua is not a low-level language there won't be (at least for now) support 
@@ -28,13 +30,13 @@ for low level buffer handling, for instance Surface::Lock().
 Features
 --------
 
-Automatic interface release:
+**Automatic interface release:**
 Taking advantage of Lua garbage collection, there is no need to explicitly 
 release interfaces. You can just let Lua decide when to deallocate it,
 calling Release() for you. 
 If you **do** need to release some interface immediately, of course you can.
 
-Automatic flags detection:
+**Automatic flags detection:**
 As undefined table members are nil-valued in Lua you can let him
 detect your description flags. For instance you can do:
 
@@ -59,7 +61,7 @@ You will need:
 
 * Lua 5.1
 * Perl 5.12
-* DirectFB headers
+* DirectFB headers, 1.4.15 is recomended.
 
 You can get the latest source of directfb-lua from https://github.com/ezequielgarcia/directfb-lua
 using:
