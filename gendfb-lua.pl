@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 #use strict;  # Enforce some good programming rules
+#use warnings;
 
 #######################
 ## Package variables ##
@@ -11,6 +12,7 @@ my $src_dir = "./src/";
 my %types;
 my %gen_struct_check;
 my %gen_struct_push;
+my %gen_enum_check;
 
 #########################
 ## Interface blacklist ##
@@ -884,6 +886,11 @@ while (<>) {
 	elsif ( /^\s*typedef\s+(\w+)\s+\(\*(\w+)\)\s*\(\s*$/ ) {
 		parse_func( $1, $2 );
 	}
+	elsif ( /^\s*#define\s+([^\(\s]+)(\([^\)]*\))?\s*([0-9x]+)/ ) {
+		# Simple valued macro, 
+		# TODO: Map some of these macros to strings. Maybe through a white list?
+		#print("Hey look, a simple macro! name=$1, value=$3\n");
+	}
 	elsif ( /^\s*#define\s+([^\(\s]+)(\([^\)]*\))?\s*(.*)/ ) {
 		# Macro, nothing to do 
 	}
@@ -973,7 +980,6 @@ print CORE_C  "static const luaL_reg dfb_m[] = {\n",
 print CORE_C "int LUALIB_API luaopen_$pkgname (lua_State *L)\n",
 	 		   "{\n";
 
-my @interfaces = grep { $types{$_}{KIND} eq "interface" } keys %types;
 foreach (@interfaces) {
 	print CORE_C "\topen_$_(L);\n",
 }
