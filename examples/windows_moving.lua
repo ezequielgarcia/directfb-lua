@@ -23,7 +23,7 @@ s:Clear( 0, 0, 0xff, 0xff)
 s:Release()
 
 -- Make windows visible
-red:SetOpacity(0xff)
+red:SetOpacity(0x80)
 blue:SetOpacity(0x80)
 
 -- Create event buffer to receive window events (mouse, keyboard, etc)
@@ -36,7 +36,6 @@ y = 0
 focus = nil
 
 -- Main event processing loop
-print('Press any key on the window to exit.')
 while true do
 	buffer:WaitForEvent()
 	event = buffer:GetEvent()
@@ -49,7 +48,12 @@ while true do
 
 	-- Any key exits the program
 	if event.type == DWET_KEYDOWN then
-		break
+		if event.key_symbol == DIKS_ESCAPE or
+		   event.key_symbol == DIKS_SMALL_Q or
+		   event.key_symbol == DIKS_CAPITAL_Q then
+			break
+		end
+
 	-- Mouse button down grabs the window
 	elseif event.type == DWET_BUTTONDOWN then
 		grabbed = true
@@ -70,5 +74,12 @@ while true do
 			x = event.cx
 			y = event.cy
 		end
+
+	-- Mouse wheel, changes opacity
+	elseif event.type == DWET_WHEEL then
+		opacity = focus:GetOpacity() + event.step
+		if opacity >= 0xff then opacity = 0xff end
+		if opacity <= 0x00 then opacity = 0x01 end
+		focus:SetOpacity(opacity)
 	end
 end
