@@ -527,6 +527,7 @@ sub parse_interface {
 							#else {
 								$post_code .= "\tlua_pushnumber(L, $param->{NAME});\n";
 								$gen_enum_push{$param->{TYPE}} = 1;
+								$gen_enum_globals{$param->{TYPE}} = 1;
 							#}
 						}
 					}
