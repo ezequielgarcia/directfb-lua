@@ -732,8 +732,6 @@ sub parse_union {
 		elsif ( /^\s*\}\s*(\w+)\s*\;\s*$/ ) {
 			$union = $1;
 
-			print("Union found! $union\n ");
-
 			trim( \$union );
 
 			last;
@@ -1039,8 +1037,8 @@ foreach (keys %gen_struct_push) {
 	generate_struct_push($_);
 }
 
-foreach my $s (keys %gen_enum_check) {
-	generate_enum_check($s);
+foreach (keys %gen_enum_check) {
+	generate_enum_check($_);
 }
 
 foreach (keys %gen_union_push) {
