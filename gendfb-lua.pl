@@ -1,4 +1,15 @@
 #!/usr/bin/perl
+
+############################################
+# Lua2DFB generator script
+#
+# This script parses directfb headers and produces
+# lua binding C code.
+#
+# This is based on a previous script by Denis Oliver Kropp,
+# for a javascript v8 binding.
+#
+#
 #use strict;  # Enforce some good programming rules
 #use warnings;
 

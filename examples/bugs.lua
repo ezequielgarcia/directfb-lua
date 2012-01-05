@@ -1,3 +1,6 @@
+--
+-- This example is based in df_andi.c contained in the DirectFB distribution.
+--
 
 require 'directfb'
 

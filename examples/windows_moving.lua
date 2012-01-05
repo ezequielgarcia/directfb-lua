@@ -1,3 +1,6 @@
+--
+-- This example is based in df_window.c contained in the DirectFB distribution.
+--
 
 require 'directfb'
 
