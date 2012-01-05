@@ -175,7 +175,7 @@ sub generate_struct_check {
 		print STRUCTS_C "\tint autoflag = 1;\n";
 	}
 
-	print STRUCTS_C	"\tif (lua_isnil(L, index)) \n",
+	print STRUCTS_C	"\tif (lua_isnoneornil(L, index)) \n",
 		  			"\t\treturn NULL;\n\n",
 		  			"\tluaL_checktype(L, index, LUA_TTABLE);\n",
 		  			"\tmemset(dst, 0, sizeof(${struct}));\n";
@@ -446,7 +446,7 @@ sub parse_interface {
 					}
 					else {
 						$declaration .= "\t$param->{TYPE} $param->{NAME};\n";
-						$pre_code .= "\t$param->{NAME} = luaL_checkinteger(L, $arg_num);\n";
+						$pre_code .= "\t$param->{NAME} = lua_tointeger(L, $arg_num);\n";
 						$args .= ", $param->{NAME}";
 					}
 				}
