@@ -1,0 +1,6 @@
+Lua canvas
+----------
+
+This is an implementation of the canvas module based of DirectFB.
+This module is part of the Ginga middleware specification, for more information
+check http://www.lua.inf.puc-rio.br/~francisco/nclua/referencia/canvas.html

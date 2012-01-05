@@ -1,5 +1,5 @@
 DFB_INC_DIR := $(shell pkg-config --variable=includedir directfb)/directfb/
-DFB_HEADER := $(DFB_INC_DIR)directfb.h $(DFB_INC_DIR)directfb_keyboard.h
+DFB_HEADER := $(DFB_INC_DIR)directfb_keyboard.h $(DFB_INC_DIR)directfb.h 
 
 CFLAGS := -Wall -fPIC $(shell pkg-config --cflags directfb lua)
 LDFLAGS := -shared $(shell pkg-config --libs directfb lua)
