@@ -2,3 +2,5 @@ directfb.so
 tags
 .gen.stamp
 src
+examples/canvas/*.so
+examples/canvas/*.ttf

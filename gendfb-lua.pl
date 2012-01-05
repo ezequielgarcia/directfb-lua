@@ -73,7 +73,6 @@ $blacklist{SetDstGeometry}			= 1;
 $blacklist{GetPalette}				= 1;
 $blacklist{SetPalette}				= 1;
 $blacklist{SetDstGeometry}			= 1;
-$blacklist{CreateInputEventBuffer}	= 1;
 $blacklist{SendEvent}				= 1;
 $blacklist{GetScreen}				= 1;
 $blacklist{GetKeymapEntry}			= 1;
@@ -931,7 +930,7 @@ h_create( STRUCTS_H, "structs.h" );
 c_create( STRUCTS_C, "structs.c", "#include \"common.h\"\n#include \"enums.h\"\n" );
 
 h_create( ENUMS_H, "enums.h", "#include \"common.h\"\n" );
-c_create( ENUMS_C, "enums.c", "#include \"enums.h\"\n#include \"common.h\"\n" );
+c_create( ENUMS_C, "enums.c", "#include \"ctype.h\"\n#include \"enums.h\"\n#include \"common.h\"\n" );
 
 print COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
 				"\t#define DLL_EXPORT __attribute__((visibility(\"default\")))\n",
