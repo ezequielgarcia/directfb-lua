@@ -13,6 +13,8 @@ local temp = 0
 
 fps = 0
 
+math.randomseed(os.time())
+
 -- Draw the population string in upper left corner
 local function drawPopulation()
 
@@ -22,10 +24,10 @@ local function drawPopulation()
 	primary:SetColor(180, 200, 255, 0xff)
 	primary:DrawString('Bug population: ' .. #bugs, -1, 10, 0, 'DSTF_LEFT | DSTF_TOP' )
 
-	primary:SetColor(190, 210, 255, 0xff )
+	primary:SetColor(190, 200, 255, 0xff )
 	primary:DrawString('FPS: ' .. math.floor(fps), -1, 300, 0, 'DSTF_LEFT | DSTF_TOP')
 
-	primary:SetColor(255, 210, 120, 0xff )
+	primary:SetColor(255, 120, 120, 0xff )
 	primary:DrawString('Temp: ' .. math.floor(temp), -1, 500, 0, 'DSTF_LEFT | DSTF_TOP')
 end
 
@@ -40,11 +42,11 @@ end
 
 local function moveBugs()
 
+	temp = 0
 	for k,v in pairs(bugs) do
 
-		temp = v.vx*v.vx + v.vy*v.vy
+		temp = temp + v.vx*v.vx + v.vy*v.vy
 
-		-- TODO: next frame
 		v.x = v.x + v.vx*timestep
 		v.y = v.y + v.vy*timestep
 
@@ -53,11 +55,21 @@ local function moveBugs()
 		
 	end
 
+	temp = temp/#bugs
+
 end
 
-local function spawn(count)
+local function destroy(count)
 	for i=1,count do
-		table.insert(bugs, {x=xres/2, y=yres/2, vx=math.random(5)-3, vy=math.random(5)-3})
+		table.remove(bugs)
+	end
+end
+
+local function create(count)
+	local angle
+	for i=1,count do
+		angle = math.random(2*math.pi*100)/100
+		table.insert(bugs, {x=xres/2, y=yres/2, vx=10*math.cos(angle), vy=10*math.sin(angle)})
 	end
 end
 
@@ -66,7 +78,7 @@ directfb.DirectFBInit()
 dfb = directfb.DirectFBCreate()
 
 -- Create input buffer
-keybuffer = dfb:CreateInputEventBuffer(DICAPS_KEYS, DFB_FALSE)
+keybuffer = dfb:CreateInputEventBuffer('DICAPS_KEYS', 'DFB_FALSE')
 
 -- Create primary surface, double buffered
 primary = dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_DOUBLE'}
@@ -80,7 +92,7 @@ primary:SetFont(font)
 -- load animation
 provider = dfb:CreateImageProvider('bug.gif')
 sprite = dfb:CreateSurface(provider:GetSurfaceDescription())
-provider:RenderTo(sprite, nil)
+provider:RenderTo(sprite)
 
 -- white color key
 sprite:SetSrcColorKey(0xff, 0xff, 0xff)
@@ -91,9 +103,9 @@ desc = provider:GetSurfaceDescription()
 desc.width = xres
 desc.height = yres
 background = dfb:CreateSurface(desc)
-provider:RenderTo(background, nil)
+provider:RenderTo(background)
 
-spawn(25)
+create(10)
 
 frame = 1
 timestep = 0.0
@@ -102,9 +114,33 @@ local now, prev = start, start
 -- Main loop
 while not quit do
 
+	-- FIXME: 
+	-- This is a little hack, to be able to use GetEvent, and 
+	-- similar functions that fail on non-fatal conditions
+	local status, event = pcall(keybuffer.GetEvent, keybuffer)
+	if status then
+		if event.type == DIET_KEYPRESS then
+			-- Terminate app
+			if event.key_symbol == DIKS_ESCAPE or
+			   event.key_symbol == DIKS_SMALL_Q or
+			   event.key_symbol == DIKS_CAPITAL_Q then
+
+				quit = true
+
+			-- Increase bug population
+			elseif event.key_symbol == DIKS_CURSOR_DOWN then
+				create(10)
+
+			-- Decrease bug population
+			elseif event.key_symbol == DIKS_CURSOR_UP then
+				destroy(10)
+			end
+		end
+	end
+
 	primary:SetBlittingFlags('DSBLIT_NOFX')
         
-	primary:Blit(background, nil, 0, 0)
+	primary:Blit(background)
 
 	moveBugs()
 
@@ -112,7 +148,7 @@ while not quit do
 
 	drawPopulation()
           
-	primary:Flip(nil, 0)
+	primary:Flip()
 
 	now = os.time()
 	if now - prev > 0 then
