@@ -199,6 +199,7 @@ sub generate_struct_check {
 					if ($types{$entry->{TYPE}}->{KIND} eq "enum") {
 						print STRUCTS_C "\t\tdst->$entry->{NAME} = check_$entry->{TYPE}(L, -1);\n";
 						$gen_enum_check{$entry->{TYPE}} = 1;
+						$gen_enum_globals{$entry->{TYPE}} = 1;
 					}
 					else {
 						print STRUCTS_C "\t\tdst->$entry->{NAME} = lua_tonumber(L, -1);\n";
@@ -250,6 +251,10 @@ sub generate_struct_push {
 	foreach my $entry (@{$types{$struct}->{ENTRIES}}) {
 		# FIXME: Little hack to avoid struct timeval
 		next if ($entry->{TYPE} eq "struct timeval");
+
+		if ($types{$entry->{TYPE}}->{KIND} eq "enum") {
+			$gen_enum_globals{$entry->{TYPE}} = 1;
+		}
 
 		print STRUCTS_C "\tlua_pushstring(L, \"$entry->{NAME}\");\n";
 		if ($entry->{ARRAY} ne "" and $entry->{TYPE} eq "char") {
@@ -1062,13 +1067,7 @@ foreach (keys %gen_enum_check) {
 
 print ENUMS_C "\n";
 
-foreach my $enum (keys %gen_enum_push) {
-	foreach (@{$types{$enum}->{ENTRIES}}) {
-		print ENUMS_C 	"\tlua_pushnumber(L, $_);\n",
-						"\tlua_setglobal(L, \"$_\");\n\n";
-	}
-}
-foreach my $enum (keys %gen_enum_check) {
+foreach my $enum (keys %gen_enum_globals) {
 	foreach (@{$types{$enum}->{ENTRIES}}) {
 		print ENUMS_C 	"\tlua_pushnumber(L, $_);\n",
 						"\tlua_setglobal(L, \"$_\");\n\n";
