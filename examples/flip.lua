@@ -7,9 +7,9 @@ dfb = directfb.DirectFBCreate()
 
 primary = dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_DOUBLE'}
 
-primary:Clear(0, 0, 0, 0 );
-primary:Flip(nil, 0 );
-primary:Clear(0xff, 0xff, 0xff, 0xff );
+primary:Clear()
+primary:Flip()
+primary:Clear(0xff, 0xff, 0xff, 0xff )
 
 start = os.time()
 
@@ -21,4 +21,4 @@ end
 
 stop = os.time()
 
-print('Fps reached ' .. MAX/(stop-start) .. ' fps')
+print('FPS ' .. MAX/(stop-start))

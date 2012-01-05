@@ -19,7 +19,7 @@ surface:SetFont(font)
 -- Image creation
 image = dfb:CreateImageProvider('lua.gif')
 image_surf = dfb:CreateSurface(image:GetSurfaceDescription())
-image:RenderTo(image_surf, nil)
+image:RenderTo(image_surf)
 
 surface:Blit(image_surf, nil, 100, 100)
 surface:SetColor(0, 0, 0, 0xff)
