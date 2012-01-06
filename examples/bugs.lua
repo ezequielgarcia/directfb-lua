@@ -5,7 +5,7 @@
 require 'directfb'
 
 local bugs = {}
-local dfb, keybuffer, primary, xres, yres, font, fontheight, provider, sprite, desc, fps, frame, temp
+local dfb, keybuffer, primary, xres, yres, font, fontheight, provider, sprite, w, h, desc, fps, frame, temp
 
 local step = 0.0001
 local timestep = 0.0
@@ -31,32 +31,31 @@ local function drawPopulation()
 	primary:DrawString('Temp: ' .. math.floor(temp), -1, 500, 0, 'DSTF_LEFT | DSTF_TOP')
 end
 
-local function drawBugs()
+local function stepBugs()
 
 	primary:SetBlittingFlags('DSBLIT_SRC_COLORKEY')
-
-	for k,v in pairs(bugs) do
-		primary:Blit(sprite, nil, v.x, v.y );
-	end
-end
-
-local function moveBugs()
+	primary:SetColor(0, 0, 0, 0xff )
 
 	temp = 0
 	for k,v in pairs(bugs) do
 
-		temp = temp + v.vx*v.vx + v.vy*v.vy
-
+		-- Get next pos
 		v.x = v.x + v.vx*timestep
 		v.y = v.y + v.vy*timestep
 
-		if v.x > xres or v.x < 0 then v.vx = -v.vx end
-		if v.y > yres or v.y < 0 then v.vy = -v.vy end
-		
+		if (v.x+w) > xres or v.x < 0 then v.vx = -v.vx end
+		if (v.y+h) > yres or v.y < 0 then v.vy = -v.vy end
+
+		-- Get temp
+		temp = temp + v.vx*v.vx + v.vy*v.vy
+
+		-- Blit this bug
+		primary:Blit(sprite, nil, v.x, v.y );
+
+		-- Draw speed line
+		primary:DrawLine(v.x+w/2, v.y+h/2, v.x+w/2+v.vx*5, v.y+h/2+v.vy*5)
 	end
-
 	temp = temp/#bugs
-
 end
 
 local function destroy(count)
@@ -91,7 +90,9 @@ primary:SetFont(font)
 
 -- load animation
 provider = dfb:CreateImageProvider('bug.gif')
-sprite = dfb:CreateSurface(provider:GetSurfaceDescription())
+desc = provider:GetSurfaceDescription()
+w,h = desc.width, desc.height
+sprite = dfb:CreateSurface(desc)
 provider:RenderTo(sprite)
 
 -- white color key
@@ -142,9 +143,7 @@ while not quit do
         
 	primary:Blit(background)
 
-	moveBugs()
-
-	drawBugs()
+	stepBugs()
 
 	drawPopulation()
           
