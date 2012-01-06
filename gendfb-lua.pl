@@ -62,7 +62,6 @@ $blacklist{PutData} 				= 1;
 $blacklist{SetColors}				= 1;
 $blacklist{TextureTriangles}		= 1;
 $blacklist{SetIndexTranslation}		= 1;
-$blacklist{SetMatrix}				= 1;
 $blacklist{SetSrcColorMatrix}		= 1;
 $blacklist{SetKeySelection}			= 1;
 $blacklist{Read}					= 1;
@@ -476,9 +475,10 @@ sub parse_interface {
 						# array input?
 						else
 						{
-							print "UNIMPLEMENTED: $interface\::$function: $param->{TYPE} $param->{PTR} $param->{NAME}\n";
-							$pre_code .= "\t#warning unimplemented (array input?)\n";
-							$args .= ", NULL";
+							$declaration .= "\t$param->{TYPE} *$param->{NAME}_p;\n";
+							$pre_code .= "\t$param->{NAME}_p = check_array(L, $arg_num);\n";
+							$post_code .= "\tfree($param->{NAME}_p);\n";
+							$args .= ", $param->{NAME}_p";
 						}
 					}
 					
@@ -984,6 +984,25 @@ print ENUMS_C "static int string2enum(lua_State *L, const char *str, const char*
 			  "\tlua_pop(L, 1);\n",
 			  "\treturn result;\n",
 			  "}\n\n";
+
+print STRUCTS_H "void* check_array(lua_State *L, int index);\n";
+print STRUCTS_C "void* check_array(lua_State *L, int index)\n",
+				"{\n",
+				"\tsize_t len,i;\n",
+				"\tint* array;\n",
+				"\tif (lua_isnoneornil(L, index))\n",
+				"\t\treturn NULL;\n",
+				"\tluaL_checktype(L, index, LUA_TTABLE);\n",
+				"\tlen = lua_objlen(L, index);\n",
+				"\tif (len <= 0)\n",
+				"\t\treturn NULL;\n",
+				"\tarray = malloc(sizeof(int)*len);\n",
+				"\tfor (i=0; i<len; i++) {\n",
+				"\t\tlua_rawgeti(L, index, i+1);\n",
+				"\t\tarray[i] = luaL_checkinteger(L, -1);\n",
+				"\t}\n",
+				"\treturn array;\n",
+				"}\n\n";
 
 while (<>) {
 	chomp;
