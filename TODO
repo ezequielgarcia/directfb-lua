@@ -1,7 +1,8 @@
 
-Still there is a lot of work todo!
+Still, there is a lot of work todo!
 
 * Write more tests and examples, ( maybe translating DirectFB-examples? )
+* Fix makefile, to ease cross-compiling.
 
 Generator script
 ----------------
