@@ -1,3 +1,12 @@
+------------------
+-- NCLua canvas  --
+------------------
+--
+-- Pure lua implementation of NCLua canvas module.
+-- The api interface is here:
+-- http://www.lua.inf.puc-rio.br/~francisco/nclua/referencia/canvas.html
+--
+
 local directfb = require 'directfb'
 local pairs, print, setmetatable, unpack, type, error, select = pairs, print, setmetatable, unpack, type, error, select
 

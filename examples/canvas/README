@@ -1,6 +1,17 @@
 Lua canvas
 ----------
 
-This is an implementation of the canvas module based of DirectFB.
-This module is part of the Ginga middleware specification, for more information
-check http://www.lua.inf.puc-rio.br/~francisco/nclua/referencia/canvas.html
+This is a strict implementation of the NCLua 'canvas' module based on DirectFB.
+This module is part of the Ginga middleware specification. 
+
+For more information check
+http://www.lua.inf.puc-rio.br/~francisco/nclua/referencia/canvas.html
+
+Lua event
+---------
+
+This is NOT a strict implementation of the NCLua 'event' module, based on DirectFB.
+However, it is based on the interface and implements similar behavior. 
+
+For more information check
+http://www.lua.inf.puc-rio.br/~francisco/nclua/referencia/event.html.

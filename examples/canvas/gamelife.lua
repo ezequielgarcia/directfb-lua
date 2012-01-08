@@ -6,12 +6,13 @@
 -- check http://rosettacode.org/wiki/Conway's_Game_of_Life#Lua
 --
 
+require 'event'
 local canvas = require 'canvas'
 
 local m = 30
 local w, h = canvas:attrSize()
-local cell_width = math.floor((w-5) / m)
-local cell_height = math.floor((h-5) / m)
+local cell_width = math.floor((w) / m)-1
+local cell_height = math.floor((h) / m)-1
 local cell = {}
  
 function evolve(cell)
@@ -71,7 +72,7 @@ function death(i,j)
     canvas:drawRect('frame', i * cell_width, j * cell_height, cell_width, cell_height )
 end
  
-function refresh(cell)
+function refresh()
  
     for i=1,m do
         for j=1,m do
@@ -86,6 +87,8 @@ function refresh(cell)
     canvas:flush()
  
     cell = evolve(cell)
+
+	event.timer(5, refresh)
 end
  
 canvas:attrColor('white')
@@ -101,7 +104,13 @@ end
 for j=1,m do
     cell[j][m/2] = 1
 end
- 
-while true do
-	refresh(cell)
-end
+
+-- Stop handler
+event.register(function(evt) 
+				if evt.class == 'key' and evt.type == 'press' and evt.key == 'escape' then
+					event.stop()
+				end
+				end)
+
+refresh()
+event.start()
