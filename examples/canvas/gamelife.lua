@@ -7,12 +7,12 @@
 --
 
 require 'event'
-local canvas = require 'canvas'
+require 'canvas'
 
-local m = 30
+local m = 100
 local w, h = canvas:attrSize()
-local cell_width = math.floor((w) / m)-1
-local cell_height = math.floor((h) / m)-1
+local cell_width = math.floor((w) / m)
+local cell_height = math.floor((h) / m)
 local cell = {}
  
 function evolve(cell)
@@ -88,7 +88,7 @@ function refresh()
  
     cell = evolve(cell)
 
-	event.timer(5, refresh)
+	event.timer(0, refresh)
 end
  
 canvas:attrColor('white')
