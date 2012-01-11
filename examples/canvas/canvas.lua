@@ -10,8 +10,6 @@
 local directfb = require 'directfb'
 local pairs, print, setmetatable, unpack, type, error, select = pairs, print, setmetatable, unpack, type, error, select
 
-module('canvas')
-
 -- DFB Initialization
 directfb.DirectFBInit()
 local dfb = directfb.DirectFBCreate()
@@ -140,5 +138,8 @@ function Canvas:compose(x, y, src)
 	self.surface:Blit(src, nil, x, y)
 end
 
--- Create base instance
-return Canvas.newcanvas(dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_FLIPPING'})
+-- Create base instance, set it to global canvas and return it
+local base = Canvas.newcanvas(dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_FLIPPING'})
+
+_G.canvas = base
+return base
