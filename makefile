@@ -1,8 +1,16 @@
+
+##############################################################################
+## YOU SHOULD NOT EDIT THIS FILE, USE config INSTEAD
+##
+
+include config
+
 DFB_INC_DIR := $(shell pkg-config --variable=includedir directfb)/directfb/
 DFB_HEADER := $(DFB_INC_DIR)directfb_keyboard.h $(DFB_INC_DIR)directfb.h 
 
-CFLAGS := -Wall -fPIC $(shell pkg-config --cflags directfb lua)
-LDFLAGS := -shared $(shell pkg-config --libs directfb lua)
+CFLAGS := -Wall -fPIC $(shell pkg-config --cflags directfb $(LUA))
+LDFLAGS := -shared $(shell pkg-config --libs directfb $(LUA))
+INSTALL_DIR := $(shell pkg-config --variable INSTALL_CMOD $(LUA))
 
 SRC_DIR := src/
 SRC := $(wildcard $(SRC_DIR)*.c)
@@ -10,7 +18,7 @@ SRC := $(wildcard $(SRC_DIR)*.c)
 OUTPUT=directfb.so
 
 $(OUTPUT): $(SRC) 
-	gcc $(CFLAGS) $(SRC) $(LDFLAGS) -o $@ 
+	$(CC) $(CFLAGS) $(SRC) $(LDFLAGS) -o $@ 
 
 .gen.stamp: gendfb-lua.pl dir
 	cat $(DFB_HEADER) | ./gendfb-lua.pl || exit 1
@@ -18,6 +26,10 @@ $(OUTPUT): $(SRC)
 
 tags: $(SRC_DIR)* $(DFB_HEADER)
 	ctags $(SRC_DIR)* $(DFB_HEADER)
+
+.PHONY: install
+install:
+	 cp $(OUTPUT) $(INSTALL_DIR) 
 
 .PHONY: clean
 clean:
