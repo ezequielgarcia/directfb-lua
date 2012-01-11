@@ -8,6 +8,7 @@
 -- http://www.lua.inf.puc-rio.br/~francisco/nclua/referencia/event.html
 --
 
+require 'socket'
 require 'directfb'
 
 -- DFB Initialization
@@ -15,7 +16,8 @@ directfb.DirectFBInit()
 local dfb = directfb.DirectFBCreate()
 local input = dfb:CreateInputEventBuffer('DICAPS_KEYS', 'DFB_FALSE')
 
-local MAX_STEP=100
+local IDLE_TIME=1000
+local BigTimeLeft = IDLE_TIME
 local listeners = {}
 local timers = {}
 
@@ -38,6 +40,8 @@ keys[DIKI_DOWN] 	= 'down'
 keys[DIKI_ENTER] 	= 'enter'
 keys[DIKI_SPACE] 	= 'space'
 
+local function getMillis() return socket.gettime()*1000 end
+
 local function translate(e)
 	local evt = {}
 	if e.type == DIET_KEYPRESS then 
@@ -53,32 +57,62 @@ local function translate(e)
 end
 
 local function checkTimers(step)
+
+	local expired = {}
+
+	-- Clear BigTimeLeft
+	BigTimeLeft = IDLE_TIME
+
 	for k,v in pairs(timers) do
 		v.timeLeft = v.timeLeft - step
-		-- If timer is expired then we remove 
-		-- it from table, and call the expiration
-		-- function (through __call).
+
+		-- If timer is expired then we schedule 
+		-- for later work, since the expiration
+		-- function could manipulate timers table.
+		-- TODO: Is this clean?
 		if v.timeLeft <= 0 then 
-			timers[k] = nil
-			v() 
+			table.insert(expired,k)
+		else
+			-- Update BigTimeLeft
+			if not BigTimeLeft or BigTimeLeft > v.timeLeft then 
+				BigTimeLeft = v.timeLeft 
+			end
 		end
+	end
+
+	-- If timer is expired then we remove 
+	-- it from table, and call the expiration
+	-- function.
+	for k,v in pairs(expired) do
+		timers[v].expired()
+		timers[v] = nil	
 	end
 end
 
 local function main()
-	local evt, e, status, err
-	local currStep = MAX_STEP
+	local evt, e, status, err, now, sleepTime, waitTime
 
 	while true do
 
 		-- Wait for an event
 		while true do
+			-- Get time before wait
+			now = getMillis()
+
+			waitTime = math.floor(BigTimeLeft or IDLE_TIME)
+
+			-- Wait for events
+			status, err = pcall(input.WaitForEventWithTimeout, input, 0, waitTime)
+
+			sleepTime = math.floor(getMillis()-now)
+
 			-- Check expired timers
-			status, err = pcall(input.WaitForEventWithTimeout, input, 0, currStep)
+			checkTimers(sleepTime)
+
+			-- Check events
 			if status then
 				break
 			end
-			checkTimers(currStep)
 		end
 
 		-- Get all events, until buffer is empty
@@ -98,7 +132,7 @@ local function main()
 	end
 end
 
-local table, coroutine, setmetatable, print = table, coroutine, setmetatable, print
+local table, coroutine, assert = table, coroutine, assert
 local co = coroutine.create(main)
 
 module('event')
@@ -108,9 +142,10 @@ function register(f)
 end
 
 function timer(time,fun)
-	local t = {timeLeft=time, __call=fun}
-	setmetatable(t,t)
-	table.insert(timers,t)
+	assert(fun,'cannot create time with nil expiration callback')
+	local inst = {startTime=time,timeLeft=time, expired=fun}
+	table.insert(timers,inst)
+	if not BigTimeLeft or BigTimeLeft > time then BigTimeLeft = time end
 end
 
 -- Will block execution, so it must be called at last
