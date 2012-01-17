@@ -11,13 +11,13 @@ surface = dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_FLIPPING'}
 surface:Clear( 0x80, 0x80, 0x80, 0xff )
 
 -- Font creation
-font_path = 'DejaVuSans.ttf'
+font_path = 'res/DejaVuSans.ttf'
 font = dfb:CreateFont(font_path, {height=30})
 
 surface:SetFont(font)
 
 -- Image creation
-image = dfb:CreateImageProvider('lua.gif')
+image = dfb:CreateImageProvider('res/lua.gif')
 image_surf = dfb:CreateSurface(image:GetSurfaceDescription())
 image:RenderTo(image_surf)
 
