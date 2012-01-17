@@ -187,14 +187,13 @@ can get through lua.
 To run the examples you must first compile and install the library.
 Then any example can be launched from the examples dir:
 
-  $ cd examples
-  $ lua bugs.lua
-  ...
+    $ cd examples
+    $ lua bugs.lua
 
 or 
 
-  $ cd examples
-  $ lua input.lua
+    $ cd examples
+    $ lua input.lua
 
 If you have any example you'd like to share, just send me a patch or pull
 request and I'll be glad to add it.
