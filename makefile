@@ -28,7 +28,7 @@ tags: $(SRC_DIR)* $(DFB_HEADER)
 	ctags $(SRC_DIR)* $(DFB_HEADER)
 
 .PHONY: install
-install:
+install: $(OUTPUT)
 	 cp $(OUTPUT) $(INSTALL_DIR) 
 
 .PHONY: clean
