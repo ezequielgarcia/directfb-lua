@@ -84,12 +84,12 @@ primary = dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_DOUBLE'}
 xres, yres = primary:GetSize()
 
 -- load font
-font = dfb:CreateFont('DejaVuSans.ttf', {height=24})
+font = dfb:CreateFont('res/DejaVuSans.ttf', {height=24})
 fontheight = font:GetHeight()
 primary:SetFont(font)
 
 -- load animation
-provider = dfb:CreateImageProvider('bug.gif')
+provider = dfb:CreateImageProvider('res/bug.gif')
 desc = provider:GetSurfaceDescription()
 w,h = desc.width, desc.height
 sprite = dfb:CreateSurface(desc)
@@ -99,7 +99,7 @@ provider:RenderTo(sprite)
 sprite:SetSrcColorKey(0xff, 0xff, 0xff)
 
 -- load background, (I hope) GC will take care of previous provider
-provider = dfb:CreateImageProvider('background.jpg')
+provider = dfb:CreateImageProvider('res/background.jpg')
 desc = provider:GetSurfaceDescription()
 desc.width = xres
 desc.height = yres

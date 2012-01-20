@@ -18,7 +18,7 @@ primary:Clear()
 primary:Flip()
 
 -- load font
-font = dfb:CreateFont('DejaVuSans.ttf', {height=50})
+font = dfb:CreateFont('res/DejaVuSans.ttf', {height=50})
 primary:SetFont(font)
 primary:SetColor(0xff, 0xff, 0xff, 0xff)
 
