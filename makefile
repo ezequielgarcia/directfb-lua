@@ -5,12 +5,12 @@
 
 include config
 
-DFB_INC_DIR := $(shell pkg-config --variable=includedir directfb)/directfb/
-DFB_HEADER := $(DFB_INC_DIR)directfb_keyboard.h $(DFB_INC_DIR)directfb.h 
+DFB_INC_DIR = $(shell pkg-config --variable=includedir directfb)/directfb/
+DFB_HEADER = $(DFB_INC_DIR)directfb_keyboard.h $(DFB_INC_DIR)directfb.h
 
-CFLAGS := -Wall -fPIC $(shell pkg-config --cflags directfb $(LUA))
-LDFLAGS := -shared $(shell pkg-config --libs directfb $(LUA))
-INSTALL_DIR := $(shell pkg-config --variable INSTALL_CMOD $(LUA))
+CFLAGS = -Wall -fPIC $(shell pkg-config --cflags directfb $(LUA))
+LDFLAGS = -shared $(shell pkg-config --libs directfb $(LUA))
+INSTALL_DIR = $(shell pkg-config --variable INSTALL_CMOD $(LUA))
 
 SRC_DIR := src/
 SRC := $(wildcard $(SRC_DIR)*.c)
