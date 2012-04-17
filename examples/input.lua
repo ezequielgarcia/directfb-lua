@@ -8,7 +8,7 @@ primary = dfb:CreateSurface {caps='DSCAPS_PRIMARY|DSCAPS_FLIPPING'}
 
 -- Render tux image to tux surface
 prov = dfb:CreateImageProvider('res/lua.gif')
-desc = prov:GetSurfaceDescription();
+desc = prov:GetSurfaceDescription()
 tux = dfb:CreateSurface(desc)
 prov:RenderTo(tux)
 prov:Release();
