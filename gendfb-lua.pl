@@ -40,6 +40,7 @@ $blacklist{IDirectFBScreen}			= 1;
 ## Type blacklist ##
 ####################
 $blacklist{DFBUserEvent}			= 1;
+$blacklist{DFBSurfaceEvent}			= 1;
 $blacklist{DFBVideoProviderEvent}	= 1;
 $blacklist{DFBUniversalEvent}		= 1;
 	
