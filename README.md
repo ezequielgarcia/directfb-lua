@@ -4,6 +4,12 @@ Overview
 directfb-lua [Lua](http://www.lua.org) binding to [DirectFB](http://directfb.org).
 It is an automated binding generated from the DirectFB headers.
 
+Like most Lua automatic binding generators, directfb-lua produces ~10k lines of code
+out of almost nothing: just a Perl script and a bunch of headers.
+
+**Unlike** most Lua automatic binding generators, directfb-lua produces **human readable**
+source code (try it!). This is a direct consequence of DirectFB's clean interface.
+
 For more info, contact me:
 
 * Ezequiel Garcia elezegarcia@gmail.com
