@@ -19,10 +19,12 @@ blue = layer:CreateWindow {posx=200, posy=200, width=300, height=300, surface_ca
 -- Color windows, one red and one blue
 s = red:GetSurface()
 s:Clear( 0xff, 0, 0, 0xff)
+s:Flip()
 s:Release()
 
 s = blue:GetSurface()
 s:Clear( 0, 0, 0xff, 0xff)
+s:Flip()
 s:Release()
 
 -- Make windows visible
