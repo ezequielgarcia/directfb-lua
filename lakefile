@@ -1,0 +1,23 @@
+
+-- Set prefix, for cross compilation
+local crosscompile = 
+lake.set_flags {PREFIX = crosscompile}
+
+-- Define a few paths, getting them from pkg-config
+local installdir = utils.shell 'pkg-config --variable INSTALL_CMOD lua'
+local dfb_inc_dir = utils.shell 'pkg-config --variable includedir directfb'
+local dfb_headers = dfb_inc_dir .. '/directfb/directfb_keyboard.h'
+dfb_headers = dfb_headers .. ' ' .. dfb_inc_dir .. '/directfb/directfb.h'
+
+-- Define a target for the automagical source generation
+local gen = target('.gen.stamp', './gendfb-lua.pl', 'cat ' .. dfb_headers .. ' | ./gendfb-lua.pl && touch .gen.stamp')
+
+-- This is all that we need, to compile
+local lib = c.shared{'directfb', needs='lua, directfb', src='./src/*.c', odir='./obj'}
+
+-- Install rule
+target('install', './obj/directfb.so', 'su -c \"cp -av ./obj/directfb.so ' .. installdir .. '\"')
+
+-- This rules by default
+default {gen, lib}
+
