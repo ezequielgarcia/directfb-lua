@@ -969,13 +969,16 @@ sub parse_func {
 $COMMON_H = h_create( "common.h" );
 
 # DLL_EXPORT is not being used, so it could be removed.
-print $COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
-				"\t#define DLL_EXPORT __attribute__((visibility(\"default\")))\n",
-				"\t#define DLL_LOCAL	__attribute__((visibility(\"hidden\")))\n",
-				"#else\n",
-				"\t#define DLL_EXPORT\n",
-				"\t#define DLL_LOCAL\n",
-				"#endif\n\n";
+print $COMMON_H <<END;
+#if defined(__GNUC__) && __GNUC__ >= 4
+    #define DLL_EXPORT __attribute__((visibility("default")))
+    #define DLL_LOCAL  __attribute__((visibility("hidden")))
+#else
+    #define DLL_EXPORT
+    #define DLL_LOCAL
+#endif
+
+END
 
 h_close( $COMMON_H );
 
