@@ -1157,7 +1157,7 @@ print $CORE_C	"static int l_DirectFBCreate (lua_State *L)\n",
 				"\treturn 1;\n",
 				"}\n\n";
 
-print $CORE_C  "static const luaL_reg dfb_m[] = {\n",
+print $CORE_C  "static const luaL_Reg dfb_m[] = {\n",
 				"\t{\"DirectFBCreate\", l_DirectFBCreate},\n",
 				"\t{\"DirectFBInit\", l_DirectFBInit},\n",
 				"\t{NULL, NULL}\n",
