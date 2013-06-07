@@ -1173,13 +1173,14 @@ foreach (@interfaces) {
 	print $CORE_C "\topen_$_(L);\n",
 }
 
-print $CORE_C "\n",
-			   "\tluaL_openlib(L, \"$pkgname\", dfb_m, 0);\n",
-				"\topen_enums(L);\n",
-			   "\treturn 1;\n",
-			   "}";
-
-h_close( $COMMON_H );
+print $CORE_C <<"END";
+    
+    luaL_newlib(L, dfb_m);
+    lua_setglobal(L, "$pkgname"); 
+    open_enums(L);
+    return 1;
+}
+END
 
 c_close( $CORE_C );
 
