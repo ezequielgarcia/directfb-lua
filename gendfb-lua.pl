@@ -47,7 +47,7 @@ $blacklist{DFBUserEvent}			= 1;
 $blacklist{DFBSurfaceEvent}			= 1;
 $blacklist{DFBVideoProviderEvent}	= 1;
 $blacklist{DFBUniversalEvent}		= 1;
-	
+
 ########################
 ## Function blacklist ##
 ########################
@@ -307,7 +307,7 @@ sub generate_interface_check {
 						"\t${interface} **p;\n",
 						"\tluaL_checktype(L, index, LUA_TUSERDATA);\n",
 						"\tp = (${interface} **) luaL_checkudata(L, index, \"${interface}\");\n",
-						"\tif (p == NULL) luaL_typerror(L, index, \"${interface}\");\n",
+						"\tif (p == NULL) luaL_argerror(L, index, \"${interface}\");\n",
 						"\treturn p;\n",
 						"}\n\n";
 }
