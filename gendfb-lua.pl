@@ -655,7 +655,7 @@ sub parse_interface {
 				"\tlua_pushstring(L, \"__index\");\n",
 				"\tlua_pushvalue(L, -2);\n",
 				"\tlua_settable(L, -3);\n",
-				"\tluaL_openlib(L, NULL, ${interface}_methods, 0);\n",
+				"\tluaL_setfuncs(L, ${interface}_methods, 0);\n",
 				"\treturn 1;\n",
 				"}\n";
 
