@@ -98,6 +98,16 @@ $blacklist{SetDstColorKeyExtended}	= 1;
 $blacklist{DrawMonoGlyphs}			= 1;
 $blacklist{SetSrcConvolution}		= 1;
 
+######################
+## Define blacklist ##
+######################
+$blacklist{DIDCAPS_NONE} = 1;
+$blacklist{DIDCAPS_KEYS} = 1;
+$blacklist{DIDCAPS_AXES} = 1;
+$blacklist{DIDCAPS_BUTTONS} = 1;
+$blacklist{DIDCAPS_ALL} = 1;
+
+
 ###############
 ## Utilities ##
 ###############
@@ -705,7 +715,7 @@ sub parse_enum {
 		# NOTE: This strange "sa" exception is needed because
 		# older headers comments are a bit wicked. This 
 		# is already fixed in newer ones (check git repo).
-		if ($entry ne "" and $entry ne "sa") {
+		if ($entry ne "" and $entry ne "sa" and ! exists $blacklist{$entry}) {
 			push (@entries, $entry);
 		}
 	}
