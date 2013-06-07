@@ -327,13 +327,17 @@ sub h_create {
 	open( my $FILE, ">", ${src_dir} . $filename )
 		or die ("*** Can not open '$filename' for writing:\n*** $!");
 
-	print $FILE "#ifndef $FILE\n",
-				"#define $FILE\n\n",
-				"#include \"lua.h\"\n", 
-				"#include \"lauxlib.h\"\n",
-				"#include \"directfb.h\"\n",
-				"\n",
-				"$includes\n";
+	print $FILE <<"END";
+#ifndef $FILE
+#define $FILE
+
+#include "lua.h"
+#include "lauxlib.h"
+#include "directfb.h"
+
+$includes
+END
+
     return $FILE;
 }
 
@@ -343,11 +347,14 @@ sub c_create {
 	open( my $FILE, ">", ${src_dir} . $filename )
 		or die ("*** Can not open '$filename' for writing:\n*** $!");
 
-	print $FILE "#include \"lua.h\"\n", 
-				"#include \"lauxlib.h\"\n",
-				"#include \"directfb.h\"\n",
-				"\n",
-				"$includes\n";
+	print $FILE <<"END";
+#include "lua.h"
+#include "lauxlib.h"
+#include "directfb.h"
+
+$includes
+END
+
     return $FILE;
 }
 
