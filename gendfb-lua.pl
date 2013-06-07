@@ -322,27 +322,31 @@ sub generate_interface_open {
 ###################
 
 sub h_create {
-	my ($filename, $includes) = @_;
+	my ($filename, @includes) = @_;
 
 	open( my $FILE, ">", ${src_dir} . $filename )
 		or die ("*** Can not open '$filename' for writing:\n*** $!");
 
+    (my $header_guard = $filename) =~ s/\./_/g;
 	print $FILE <<"END";
-#ifndef $FILE
-#define $FILE
+#ifndef $header_guard
+#define $header_guard
 
 #include "lua.h"
 #include "lauxlib.h"
 #include "directfb.h"
 
-$includes
 END
-
+    
+    foreach my $inc (@includes){
+        print $FILE qq!#include "$inc"\n!;
+    }
+    
     return $FILE;
 }
 
 sub c_create {
-	my ($filename, $includes) = @_;
+	my ($filename, @includes) = @_;
 
 	open( my $FILE, ">", ${src_dir} . $filename )
 		or die ("*** Can not open '$filename' for writing:\n*** $!");
@@ -352,9 +356,12 @@ sub c_create {
 #include "lauxlib.h"
 #include "directfb.h"
 
-$includes
 END
-
+    
+    foreach my $inc (@includes){
+        print $FILE qq!#include "$inc"\n!;
+    }
+    
     return $FILE;
 }
 
@@ -418,7 +425,7 @@ sub parse_interface {
 	trim( \$interface );
 
 	# TODO: separate generate from parsing
-	$FH = c_create( "${interface}.c", "#include \"common.h\"\n#include \"structs.h\"\n#include \"interfaces.h\"\n#include \"enums.h\"\n" );
+	$FH = c_create( "${interface}.c", qw"common.h structs.h interfaces.h enums.h" );
 
 	my @funcs;
 
@@ -621,7 +628,7 @@ sub parse_interface {
 				"}\n",
 				"\n\n";
 
-	print FH "static const luaL_reg ${interface}_methods[] = {\n";
+	print $FH "static const luaL_Reg ${interface}_methods[] = {\n";
 
 	for my $func (@funcs) {
 		print $FH "\t{\"$func->{NAME}\",l_${interface}_$func->{NAME}},\n";
@@ -948,18 +955,8 @@ sub parse_func {
 ## Main ##
 ##########
 
+## common.h
 $COMMON_H = h_create( "common.h" );
-
-$CORE_C = c_create( "core.c", "#include \"interfaces.h\"\n#include \"enums.h\"\n" );
-
-$INTERFACE_H = h_create( "interfaces.h", "#include \"common.h\"\n" );
-$INTERFACE_C = c_create( "interfaces.c", "#include \"common.h\"\n" );
-
-$STRUCTS_H = h_create( "structs.h" );
-$STRUCTS_C = c_create( "structs.c", "#include \"common.h\"\n#include \"enums.h\"\n" );
-
-$ENUMS_H = h_create( "enums.h", "#include \"common.h\"\n" );
-$ENUMS_C = c_create( "enums.c", "#include \"ctype.h\"\n#include \"enums.h\"\n#include \"common.h\"\n" );
 
 # DLL_EXPORT is not being used, so it could be removed.
 print $COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
@@ -969,6 +966,20 @@ print $COMMON_H	"#if defined(__GNUC__) && __GNUC__ >= 4\n",
 				"\t#define DLL_EXPORT\n",
 				"\t#define DLL_LOCAL\n",
 				"#endif\n\n";
+
+h_close( $COMMON_H );
+
+
+$CORE_C = c_create( "core.c", qw"interfaces.h enums.h" );
+
+$INTERFACE_H = h_create( "interfaces.h", qw"common.h" );
+$INTERFACE_C = c_create( "interfaces.c", qw"common.h" );
+
+$STRUCTS_H = h_create( "structs.h" );
+$STRUCTS_C = c_create( "structs.c", qw"common.h enums.h" );
+
+$ENUMS_H = h_create( "enums.h", qw"common.h" );
+$ENUMS_C = c_create( "enums.c", qw"ctype.h enums.h common.h" );
 
 print $ENUMS_C "static int string2enum(lua_State *L, const char *str, const char* type)\n",
 			  "{\n",
