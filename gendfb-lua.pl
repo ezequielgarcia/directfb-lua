@@ -656,6 +656,7 @@ sub parse_interface {
 				"\tlua_pushvalue(L, -2);\n",
 				"\tlua_settable(L, -3);\n",
 				"\tluaL_setfuncs(L, ${interface}_methods, 0);\n",
+				"\tlua_pop(L, 1);\n",
 				"\treturn 1;\n",
 				"}\n";
 
@@ -1031,7 +1032,8 @@ print $STRUCTS_C "void* check_array(lua_State *L, int index)\n",
 				"\tif (lua_isnoneornil(L, index))\n",
 				"\t\treturn NULL;\n",
 				"\tluaL_checktype(L, index, LUA_TTABLE);\n",
-				"\tlen = lua_objlen(L, index);\n",
+				"\tlen = lua_rawlen(L, index);\n",
+				"\tlua_pop(L, 1);\n",
 				"\tif (len <= 0)\n",
 				"\t\treturn NULL;\n",
 				"\tarray = malloc(sizeof(int)*len);\n",
@@ -1176,8 +1178,8 @@ foreach (@interfaces) {
 print $CORE_C <<"END";
     
     luaL_newlib(L, dfb_m);
-    lua_setglobal(L, "$pkgname"); 
     open_enums(L);
+    lua_setglobal(L, "$pkgname"); 
     return 1;
 }
 END
