@@ -12,8 +12,9 @@ CFLAGS = -Wall -fPIC $(shell pkg-config --cflags directfb $(LUA))
 LDFLAGS = -shared $(shell pkg-config --libs directfb $(LUA))
 INSTALL_DIR = $(shell pkg-config --variable INSTALL_CMOD $(LUA))
 
+COMPAT_DIR := compat/
 SRC_DIR := src/
-SRC := $(wildcard $(SRC_DIR)*.c)
+SRC := $(wildcard $(SRC_DIR)*.c $(COMPAT_DIR)*.c)
 
 OUTPUT=directfb.so
 
