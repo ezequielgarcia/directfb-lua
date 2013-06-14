@@ -365,6 +365,7 @@ sub c_create {
 #include "lua.h"
 #include "lauxlib.h"
 #include "directfb.h"
+#include "../compat/compat.h"
 
 END
     
