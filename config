@@ -1,9 +1,0 @@
-# Makefile configuration, feel free to edit
-
-# Do you want to build against lua or luajit?
-LUA=lua
-#LUA=luajit
-
-# Change this to cross-compile
-#CC=sh4-linux-gcc
-CC=gcc
