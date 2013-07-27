@@ -74,6 +74,10 @@ The string form is the recommended one, since it checks type coherence. Anyway, 
 History
 -------
 
+## directfb-lua 0.2
+
+* Provide Lua 5.2 compatibility, thanks to Matt Sickler!
+
 ## directfb-lua 0.1
 
 * Public alpha, basic functionality provided: font rendering, image rendering, window management, basic surface stuff.
