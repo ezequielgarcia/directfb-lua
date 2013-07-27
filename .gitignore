@@ -1,4 +1,5 @@
 directfb.so
+*.o
 tags
 .gen.stamp
 src
