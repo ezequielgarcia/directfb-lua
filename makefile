@@ -17,8 +17,8 @@ SRC := $(wildcard $(SRC_DIR)*.c)
 
 OUTPUT=directfb.so
 
-$(OUTPUT): $(SRC) 
-	$(CC) $(CFLAGS) $(SRC) $(LDFLAGS) -o $@ 
+$(OUTPUT): $(SRC)
+	$(CC) $(CFLAGS) $(SRC) $(LDFLAGS) -o $@
 
 .gen.stamp: gendfb-lua.pl dir
 	cat $(DFB_HEADER) | ./gendfb-lua.pl || exit 1
@@ -29,7 +29,7 @@ tags: $(SRC_DIR)* $(DFB_HEADER)
 
 .PHONY: install
 install: $(OUTPUT)
-	 cp $(OUTPUT) $(INSTALL_DIR) 
+	 cp $(OUTPUT) $(INSTALL_DIR)
 
 .PHONY: clean
 clean:
