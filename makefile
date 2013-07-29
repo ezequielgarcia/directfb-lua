@@ -12,7 +12,9 @@ DFB_HEADER = $(DFB_INC_DIR)directfb_keyboard.h $(DFB_INC_DIR)directfb.h
 
 CFLAGS = -Wall -fPIC $(shell pkg-config --cflags directfb $(LUA))
 LDFLAGS = -shared $(shell pkg-config --libs directfb $(LUA))
-INSTALL_DIR = $(shell pkg-config --variable INSTALL_CMOD $(LUA))
+
+# We might want to install the module to a different path
+INSTALL_DIR ?= $(shell pkg-config --variable INSTALL_CMOD $(LUA))
 
 COMPAT_DIR := compat/
 SRC_DIR := src/
@@ -39,6 +41,7 @@ tags: $(SRC_DIR)* $(DFB_HEADER)
 
 .PHONY: install
 install: $(OUTPUT)
+	$(Q)mkdir -p $(INSTALL_DIR)
 	$(Q)cp $(OUTPUT) $(INSTALL_DIR)
 
 .PHONY: clean
