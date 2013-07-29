@@ -5,10 +5,6 @@ endif
 
 LUA = lua
 CC  = $(HOST_DIR)$(TARGET_NAME)gcc
-AR  = $(HOST_DIR)$(TARGET_NAME)ar
-LD  = $(CC)
-RM  = rm
-STRIP  = strip
 ECHO = @echo
 PKG_CONFIG = $(HOST_DIR)pkg-config
 
@@ -28,7 +24,7 @@ OUTPUT=directfb.so
 
 $(OUTPUT): $(OBJ)
 	$(Q)$(ECHO) "    LD    "$@;
-	$(Q)$(LD) $^ $(LDFLAGS) -o $@
+	$(Q)$(CC) $^ $(LDFLAGS) -o $@
 
 .c.o:
 	$(Q)$(ECHO) "    CC    "$@;
