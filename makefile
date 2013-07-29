@@ -6,14 +6,13 @@ endif
 LUA = lua
 CC  = $(CROSS_COMPILE)gcc
 ECHO = @echo
-PKG_CONFIG = $(HOST_DIR)pkg-config
 
-DFB_INC_DIR = $(shell $(PKG_CONFIG) --variable=includedir directfb)/directfb/
+DFB_INC_DIR = $(shell pkg-config --variable=includedir directfb)/directfb/
 DFB_HEADER = $(DFB_INC_DIR)directfb_keyboard.h $(DFB_INC_DIR)directfb.h
 
-CFLAGS = -Wall -fPIC $(shell $(PKG_CONFIG) --cflags directfb $(LUA))
-LDFLAGS = -shared $(shell $(PKG_CONFIG) --libs directfb $(LUA))
-INSTALL_DIR = $(shell $(PKG_CONFIG) --variable INSTALL_CMOD $(LUA))
+CFLAGS = -Wall -fPIC $(shell pkg-config --cflags directfb $(LUA))
+LDFLAGS = -shared $(shell pkg-config --libs directfb $(LUA))
+INSTALL_DIR = $(shell pkg-config --variable INSTALL_CMOD $(LUA))
 
 COMPAT_DIR := compat/
 SRC_DIR := src/
