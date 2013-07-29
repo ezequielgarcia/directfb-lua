@@ -4,7 +4,7 @@ ifneq ("$(origin V)", "command line")
 endif
 
 LUA = lua
-CC  = $(HOST_DIR)$(TARGET_NAME)gcc
+CC  = $(CROSS_COMPILE)gcc
 ECHO = @echo
 PKG_CONFIG = $(HOST_DIR)pkg-config
 
